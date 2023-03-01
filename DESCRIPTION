@@ -1,0 +1,18 @@
+Package: methyLImp2
+Title: Missing value estimation of DNA methylation data
+Version: 1.0.0
+Author: Pietro Di Lena, Anna Plaksienko
+Maintainer: Anna Plaksienko <anna@plaxienko.com>           
+Description: This package allows to estimate missing values in DNA methylation data. methyLImp method is based on linear regression since methylation levels show a high degree of inter-sample correlation. Implementation is parallelised over chromosomes since probes on different chromosomes are usually independent. Mini-batch approach to reduce the runtime in case of large number of samples is available.
+Depends: R (>= 3.6.0)
+Imports: parallel, dplyr
+URL: https://github.com/annaplaksienko/methyLImp
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
+biocViews: DNAMethylation, Microarray, Software
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
