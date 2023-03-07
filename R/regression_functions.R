@@ -1,4 +1,4 @@
-#' Pseudo-logit function with range restricted to \code{[-X, X]} where \code{X} depends on the double machine precision.
+#' Pseudo-logit function with range restricted to \eqn{[-X, X]} where \eqn{X} depends on the double machine precision.
 #'
 #' @param x a numeric matrix
 #' @param min a number, default value is 0
@@ -40,7 +40,7 @@ inv.plogit <- function(x, min = 0, max = 1)
 #' This function is directly taken from MASS package (code on GPLv3 license) and modified in order to include the rank reduction option. The added code for rank reduction is commented in the implementation.
 #'
 #' @param X a numeric matrix
-#' @param tol a number, default value is \code{sqrt(.Machine$double.eps)}.
+#' @param tol a number, default value is \eqn{sqrt(.Machine$double.eps)}.
 #'
 #' @keywords internal
 

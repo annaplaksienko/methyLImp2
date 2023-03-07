@@ -14,6 +14,6 @@ https://support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-
 data(annoEPIC)
 }
 \description{
-Data matches each probe of Illumina EPIC array to a chromosome. Information is from https://support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-kit/downloads.html -> Infinium MethylationEPIC v1.0 Product Files (Legacy BeadChip) -> Infinium MethylationEPIC v1.0 B5 Manifest File (CSV Format).
+Data matches each probe of Illumina EPIC array to a chromosome. Information is from https://support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-kit/downloads.html -> Infinium MethylationEPIC v1.0 Product Files (Legacy BeadChip) -> Infinium MethylationEPIC v1.0 B5 Manifest File (CSV Format). Pre-processing can be found on the _methyLImp_ simulation github page.
 }
 \keyword{datasets}

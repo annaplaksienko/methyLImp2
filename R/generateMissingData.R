@@ -1,11 +1,13 @@
 #' Generation of artifical missing values
 #'
-#' This function generates missing values for the simulation purposes (to apply _methyLImp_ method and then compare the imputed values with the true ones that have been replaced by NAs). First, we randomly choose 3\% of all probes. Then for each of the chosen probes, we randomly define the number of NAs from a Poisson distribution with \code{\lambda}, appropriate to the sample size of the dataset (unless specified by the user, here we use lambda = 0.15 * #samples + 0.2). Finally, these amount of NAs is randomly placed among the samples.
+#' This function generates missing values for the simulation purposes (to apply _methyLImp_ method and then compare the imputed values with the true ones that have been replaced by NAs). First, we randomly choose 3\% of all probes. Then for each of the chosen probes, we randomly define the number of NAs from a Poisson distribution with \eqn{\lambda}, appropriate to the sample size of the dataset (unless specified by the user, here we use \eqn{lambda = 0.15 * \#samples + 0.2}). Finally, these amount of NAs is randomly placed among the samples.
 #'
 #' @param beta a numeric data matrix into which one wants to add some missing values
 #' @param lambda a number, parameter of the Poisson distribution that will indicated how many samples will have missing values in each selected probe.
 #' 
 #' @return A numeric data matrix with generated NAs in some entries.
+#' 
+#' @importFrom stats rpois
 #'
 #' @export
 

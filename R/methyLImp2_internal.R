@@ -4,8 +4,8 @@
 #' @param min a number, minimum value for bounded-range variables. Default is 0 (we assume beta-value representation of the methylation data). Can be user provided in case of other types of data.
 #' @param max a number, maximum value for bounded-range variables. Default is 1 (we assume beta-value representation of the methylation data). Can be user provided in case of other types of data.
 #' @param col.list a numeric vector, restricts the imputation only to the specified columns. If \code{NULL}, all columns are considered.
-#' @param minibatch_frac a number, what percentage of samples to use for mini-batch computation. The default is 1 (i.e., 100% of samples are used, no mini-batch).
-#' @param minibatch_reps a number, how many times repeat computations with a fraction of samples (more times - better performance). The default is 1 (as a companion to default fraction of 100%. i.e. no mini-batch).
+#' @param minibatch_frac a number, what percentage of samples to use for mini-batch computation. The default is 1 (i.e., 100\% of samples are used, no mini-batch).
+#' @param minibatch_reps a number, how many times repeat computations with a fraction of samples (more times - better performance). The default is 1 (as a companion to default fraction of 100\%. i.e. no mini-batch).
 #'
 #' @importFrom dplyr distinct
 #'

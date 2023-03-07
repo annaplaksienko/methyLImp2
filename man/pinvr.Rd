@@ -10,7 +10,7 @@ pinvr(X, max.sv = min(dim(X)), tol = sqrt(.Machine$double.eps))
 \arguments{
 \item{X}{a numeric matrix}
 
-\item{tol}{a number, default value is \code{sqrt(.Machine$double.eps)}.}
+\item{tol}{a number, default value is \eqn{sqrt(.Machine$double.eps)}.}
 }
 \description{
 Computes the Moore-Penrose generalized inverse of a matrix. Allows rank reduction of the generalized inverse.

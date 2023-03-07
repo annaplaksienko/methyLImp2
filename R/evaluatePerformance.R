@@ -1,11 +1,12 @@
 #' Evaluate root mean square error (RMSE) and mean absolute error (MAE)
 #'
-#' This function computes root mean square error and mean absolute error as an element-wise difference between two matrices (apart from NA elements): RMSE = sqrt(sum_i (beta_i - hat_beta_i)^2 / #artificial_NAs), MAE = sum_i |beta_i - hat_beta_i| / #artificial_NAs.
+#' This function computes root mean square error and mean absolute error as an element-wise difference between two matrices (apart from NA elements): \eqn{RMSE = \sqrt(\sum_i (true_i - est_i)^2 / \#NAs)}, \eqn{MAE = \sum_i |true_i - est_i| / \#NAs}.
 #'
 #' @param beta_true first numeric data matrix.
 #' @param beta_imputed second numeric data matrix
+#' @param na_positions a list where each element is a list of two elements: column id and ids of rows with NAs in that column. We need this because some NAs in \eqn{beta_true} are from real data and not artifical so we don't know the real value and can't evaluate the performance. Threfore, we need to know the positions of artificial NAs. 
 #' 
-#' @return A number, root mean square error.
+#' @return A numerical vector of two numbers, root mean square error and mean absolute error.
 #'
 #' @export
 

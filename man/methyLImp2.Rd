@@ -22,18 +22,18 @@ methyLImp2(
 
 \item{annotation}{a data frame, user provided annotation. Must contain two columns: cpg and chr, and provide a match between CpG sites and chromosomes. Choose "user" in the previous argument to be able to provide user annotation.}
 
-\item{range}{a vector of two numbers, \code{min} and \code{max}, specifying the range of values in the data. Since we assume the beta-value representation of the methylation data, the default range is \code{[0, 1]}. However, if a user wishes to apply the method to other kind of data, they can change the range in this argument.}
+\item{range}{a vector of two numbers, \eqn{min} and \eqn{max}, specifying the range of values in the data. Since we assume the beta-value representation of the methylation data, the default range is \eqn{[0, 1]}. However, if a user wishes to apply the method to other kind of data, they can change the range in this argument.}
 
 \item{col.list}{a numeric vector, restricts the imputation only to the specified columns. If \code{NULL}, all columns are considered.}
 
-\item{ncores}{number of cores to use in parallel computation. If \code{NULL}, set to \code{#physical cores} - 1.}
+\item{ncores}{number of cores to use in parallel computation. If \code{NULL}, set to \eqn{#physical cores - 1}.}
 
 \item{minibatch_frac}{a number, what percentage of samples to use for mini-batch computation. The default is 1 (i.e., 100\% of samples are used, no mini-batch).}
 
-\item{minibatch_reps}{a number, how many times repeat computations with a fraction of samples (more times - better performance). The default is 1 (as a companion to default fraction of 100\%. i.e. no mini-batch).}
+\item{minibatch_reps}{a number, how many times repeat computations with a fraction of samples (more times -> better performance). The default is 1 (as a companion to default fraction of 100\%. i.e. no mini-batch).}
 }
 \value{
-A numeric matrix \code{out} with imputed data is returned.
+A numeric matrix \eqn{out} with imputed data is returned.
 }
 \description{
 This function performs missing value imputation specific for DNA methylation data. The method is based on linear regression since methylation levels show a high degree of inter-sample correlation. Implementation is parallelised over chromosomes since probes on different chromosomes are usually independent.
