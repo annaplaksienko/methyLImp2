@@ -21,20 +21,27 @@ methyLImp2_internal <- function(dat,
   {
     colnames_dat <- colnames(dat)
 
+    #detect NAs
     dat_na <- is.na(dat)
+    #exclude columns with no NAs
     dat_na <- dat_na[, colSums(dat_na) > 0]
-    all_NA_cols <- which(colnames_dat %in% colnames(dat_na))
-    # Columns with all NAs or a single not NA value to be excluded:
-    # not enough information for imputation
+    if (dim(dat_na)[2] == 0) {
+      return("No columns with missing values detected.")
+    }
+    # exclude from the imputation columns with all NAs or 
+    # a single not NA value: not enough information for imputation
     dat_na <- dat_na[, colSums(dat_na) < (dim(dat_na)[1] - 1)]
 
     #If all the columns have missing values we cannot do anything
     if (dim(dat_na)[2] == dim(dat)[2]) {
-      return("Not enough data to conduct imputation.")
+      return("Not enough data without missing values to conduct imputation.")
     } else {
       cat("#cols with #NAs < (#samples - 1):", dim(dat_na)[2], "\n")
     }
 
+    #save all columns with NA
+    all_NA_cols <- which(colnames_dat %in% colnames(dat_na))
+    
     #if some columns are restricted by user, exclude them
     #if(!is.null(col.list)) dat_na <- dat_na[, !col.list]
 
@@ -73,8 +80,10 @@ methyLImp2_internal <- function(dat,
 
     imputed_list <- vector(mode = "list", length = minibatch_reps)
     for (r in 1:minibatch_reps) {
-      chosen_rows <- sample(1:dim(A_full)[1],
-                            size = ceiling(dim(A_full)[1] * minibatch_frac))
+      sample_size <- ifelse(dim(A_full)[1] > ceiling(dim(A_full)[1] * minibatch_frac),
+                            ceiling(dim(A_full)[1] * minibatch_frac),
+                            dim(A_full)[1])
+      chosen_rows <- sample(1:dim(A_full)[1], size = sample_size)
       A <- A_full[chosen_rows, , drop = FALSE]
       if (is.null(dim(B_full))) {
         B <- B_full[chosen_rows]

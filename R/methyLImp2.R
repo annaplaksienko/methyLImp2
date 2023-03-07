@@ -86,13 +86,27 @@ methyLImp2 <- function(data,
   cl <- makeCluster(ncores)
   clusterEvalQ(cl, library(methyLImp2))
   clusterEvalQ(cl, library(dplyr))
-  res <- parallel::clusterApplyLB(cl, data_chr, methyLImp2:::methyLImp2_internal,
+  res <- parallel::clusterApplyLB(cl, data_chr, methyLImp2_internal,
                                   min, max, col.list,
                                   minibatch_frac, minibatch_reps)
   stopCluster(cl)
+  names(res) <- names(data_chr)
+  
+  #if some chromosomes didn't have NAs or didn't have enough data for imputation,
+  #tell this to the user and then later skip them in the replacement stage
+  problem_chr <- c()
+  if (sum(sapply(res, function(x) is.character(x))) > 0) {
+    problem_chr <- names(data_chr)[sapply(res, function(x) is.character(x))]
+    for (i in length(problem_chr)) {
+      message(paste0("For chromosome ", problem_chr[i], ": ", 
+                     res[problem_chr[i]]))
+    }
+  }
 
+  #replace NAs with imputed values
   out <- data
   for (c in 1:nchr) {
+    if (names(res)[c] %in% problem_chr) next
     imputed <- res[[c]]
     rows_id <- rownames(data) %in% rownames(imputed)
     cols_id <- colnames(data) %in% colnames(imputed)

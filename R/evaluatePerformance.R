@@ -12,7 +12,7 @@
 evaluatePerformance <- function(beta_true, beta_imputed, na_positions) {
 
   nna <- length(na_positions)
-  total_nna <- sum(sapply(na_positions, function(x) length(x$na_rows)))
+  total_nna <- 0
   
   #initiate the sum that in the end we'll divide by total_nna        
   RMSE_sum <- MAE_sum <- 0
@@ -24,8 +24,13 @@ evaluatePerformance <- function(beta_true, beta_imputed, na_positions) {
     True <- beta_true[rows, col]
     Pred <- beta_imputed[rows, col]
     
-    RMSE_sum <- RMSE_sum + sum((Pred - True)^2)
-    MAE_sum <- MAE_sum + sum(abs(Pred - True))
+    #note that if some values were note imputed 
+    #because there were too many NAs in one column and we didn't consider it
+    #then we don't evaluate the performance for that value here
+    total_nna <- total_nna + sum(!is.na(Pred))
+    
+    RMSE_sum <- RMSE_sum + sum((Pred - True)^2, na.rm = TRUE)
+    MAE_sum <- MAE_sum + sum(abs(Pred - True), na.rm = TRUE)
   }
   
   RMSE <- sqrt(RMSE_sum / total_nna)
