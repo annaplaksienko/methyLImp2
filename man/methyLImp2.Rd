@@ -26,7 +26,7 @@ methyLImp2(
 
 \item{col.list}{a numeric vector, restricts the imputation only to the specified columns. If \code{NULL}, all columns are considered.}
 
-\item{ncores}{number of cores to use in parallel computation. If \code{NULL}, set to \eqn{#physical cores - 1}.}
+\item{ncores}{number of cores to use in parallel computation. If \code{NULL}, set to \eqn{\#physical cores - 1}.}
 
 \item{minibatch_frac}{a number, what percentage of samples to use for mini-batch computation. The default is 1 (i.e., 100\% of samples are used, no mini-batch).}
 

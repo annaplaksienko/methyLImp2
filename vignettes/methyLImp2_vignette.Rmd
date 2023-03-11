@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 library(methyLImp2)
 ```
 
-In this vignette we demonstrate the usage of the *methyLImp* method for the imputation of the missing values in the methylation dataset. The vignette consists o three parts: generation of the artifical missing values into example dataset (since we need to know the true values for the performance evaluation), application of *methyLImp* and performance evaluation (we compare imputed values with the true ones).
+In this vignette we demonstrate the usage of the *methyLImp* method for the imputation of the missing values in the methylation dataset. The vignette consists of three parts: generation of the artifical missing values into example dataset (since we need to know the true values for the performance evaluation), application of *methyLImp2* and performance evaluation (we compare imputed values with the true ones).
 
 ##Missing values generation
 

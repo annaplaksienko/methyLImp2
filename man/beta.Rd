@@ -14,6 +14,6 @@ https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi
 data(beta)
 }
 \description{
-The GSE199057 Gene Expression Omnibus dataset contains 68 mucosa samples from non-colon-cancer patients, from which we randomly sampled 24. Methylation data were measured on EPIC arrays and after removal of sex chromosomes and SNPs loci, it contains 816 126 probes. We have subsetted only probes from chromosomes 1 to 4 for the sake of demonstration.
+The GSE199057 Gene Expression Omnibus dataset contains 68 mucosa samples from non-colon-cancer patients, from which we randomly sampled 24. Methylation data were measured on EPIC arrays and after removal of sex chromosomes and SNPs loci, it contains 816 126 probes. We have subset only probes from chromosomes 1 to 4 for the sake of demonstration.
 }
 \keyword{datasets}
