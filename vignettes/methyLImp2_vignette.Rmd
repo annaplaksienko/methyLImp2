@@ -24,7 +24,7 @@ In this vignette we demonstrate the usage of the *methyLImp* method for the impu
 
 First, we demonstrate how we add artifical NAs into the dataset and memorize their positions so that we cal later evaluate the performance of the method.
 
-Here we use a subset of GSE199057 Gene Expression Omnibus dataset. Originally it contains 68 mucosa samples from non-colon-cancer patients, from which we randomly sampled 24. Methylation data were measured on EPIC arrays and after removal of sex chromosomes and SNPs loci, it contains 816 126 probes. At this stage, we have restricted the dataset to chromosomes 1 to 6 to reduce the size of the dataset to \<50Mb according to github requirements.
+Here we use a subset of GSE199057 Gene Expression Omnibus dataset. Originally it contains 68 mucosa samples from non-colon-cancer patients, from which we randomly sampled 24. Methylation data were measured on EPIC arrays and after removal of sex chromosomes and SNPs loci, it contains 816 126 probes. At this stage, we have restricted the dataset to chromosomes 1 to 4 to reduce the size of the dataset to \<50Mb according to github requirements. 
 
 ```{r generate artifical NAs}
 #load the dataset from the package
@@ -41,6 +41,8 @@ na_positions <- with_missing_data$na_positions
 Now, let's run *methyLImp*! Be default, the only two things you have to provide are the data matrix and the type of the data: 450K or EPIC. But here are a few other things you can tune so that the method suits your needs best: \* specify the type of data as "user-provided": then you can provide your own annotation instead of those coming with the package; \* choose the number of cores: *methyLImp* first splits the data by chromosomes and then does imputation in parallel. By default the number of cores will be one less than total number of your physical cores, but you can decrease it. Here we use 2 for the purposes of vignette building but we encourage you to increase it; \* set up mini-batch computation: if your dataset is quite big sample-wise, you can opt to use only a fraction of samples for the imputation to decrease the running time, say 10, 20, 50% (depending on the original number of samples). Subsample will be chosen randomly for each calculation. The bigger the subsample - the better is the performance, hence by default it is 1. An option to improve the performance but still keep the running time low is to repeat computation for a (randomly chosen) fraction of samples several times, maybe 2, 3, 5. In the paper we explore how these two tuning parameters influence the running time and the performance.
 
 The output matrix is the original one with imputed values instead of NAs.
+
+Note that running time should take around 2 to 3 minutes depending on your machine.
 
 ```{r run methyLImp}
 time <- system.time(beta_imputed <- methyLImp2(data = beta_with_nas, 

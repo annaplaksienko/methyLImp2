@@ -5,7 +5,7 @@
 #' @param beta a numeric data matrix into which one wants to add some missing values
 #' @param lambda a number, parameter of the Poisson distribution that will indicated how many samples will have missing values in each selected probe.
 #' 
-#' @return A numeric data matrix with generated NAs in some entries.
+#' @return A numeric data matrix with generated NAs in some entries and positions of those NAs.
 #' 
 #' @importFrom stats rpois
 #'

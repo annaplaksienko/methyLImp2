@@ -28,6 +28,8 @@ methyLImp2_internal <- function(dat,
     if (dim(dat_na)[2] == 0) {
       return("No columns with missing values detected.")
     }
+    #save all columns with NA
+    all_NA_cols <- which(colnames_dat %in% colnames(dat_na))
     # exclude from the imputation columns with all NAs or 
     # a single not NA value: not enough information for imputation
     dat_na <- dat_na[, colSums(dat_na) < (dim(dat_na)[1] - 1)]
@@ -39,9 +41,6 @@ methyLImp2_internal <- function(dat,
       cat("#cols with #NAs < (#samples - 1):", dim(dat_na)[2], "\n")
     }
 
-    #save all columns with NA
-    all_NA_cols <- which(colnames_dat %in% colnames(dat_na))
-    
     #if some columns are restricted by user, exclude them
     #if(!is.null(col.list)) dat_na <- dat_na[, !col.list]
 
@@ -67,9 +66,9 @@ methyLImp2_internal <- function(dat,
 
   }
 
-  #test2 <- vector(mode = "list", length = ngroups)
   out <- dat
   for (i in 1:ngroups) {
+    print(i)
     row_id <- ids[[i]]$row_id
     NAcols_rowid <- ids[[i]]$NAcols_rowid
 
@@ -83,7 +82,7 @@ methyLImp2_internal <- function(dat,
       sample_size <- ifelse(dim(A_full)[1] > ceiling(dim(A_full)[1] * minibatch_frac),
                             ceiling(dim(A_full)[1] * minibatch_frac),
                             dim(A_full)[1])
-      chosen_rows <- sample(1:dim(A_full)[1], size = sample_size)
+      chosen_rows <- sort(sample(1:dim(A_full)[1], size = sample_size))
       A <- A_full[chosen_rows, , drop = FALSE]
       if (is.null(dim(B_full))) {
         B <- B_full[chosen_rows]
@@ -113,7 +112,6 @@ methyLImp2_internal <- function(dat,
     out[row_id, NAcols_rowid] <- imputed
   }
 
-  #return(list(out = out, test2 = test2))
    return(out)
   
 }

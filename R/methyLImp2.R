@@ -86,7 +86,7 @@ methyLImp2 <- function(data,
   cl <- makeCluster(ncores)
   clusterEvalQ(cl, library(methyLImp2))
   clusterEvalQ(cl, library(dplyr))
-  res <- parallel::clusterApplyLB(cl, data_chr, methyLImp2_internal,
+  res <- parallel::clusterApplyLB(cl, data_chr[c(20)], methyLImp2:::methyLImp2_internal,
                                   min, max, col.list,
                                   minibatch_frac, minibatch_reps)
   stopCluster(cl)
