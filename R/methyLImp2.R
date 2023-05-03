@@ -53,8 +53,10 @@ methyLImp2 <- function(data,
   #split the data by chromosomes
   type <- match.arg(type)
   if (type == "450K") {
+    data("anno450K")
     anno <- anno450K
   } else if (type == "EPIC") {
+    data("annoEPIC")
     anno <- annoEPIC
   } else if (type == "user") {
     if (!is.null(annotation)) {
