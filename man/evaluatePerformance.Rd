@@ -19,3 +19,13 @@ A numerical vector of two numbers, root mean square error and mean absolute erro
 \description{
 This function computes root mean square error and mean absolute error as an element-wise difference between two matrices (apart from NA elements): \eqn{RMSE = \sqrt(\sum_i (true_i - est_i)^2 / \#NAs)}, \eqn{MAE = \sum_i |true_i - est_i| / \#NAs}.
 }
+\examples{
+\dontrun{
+data(beta)
+with_missing_data <- generateMissingData(beta, lambda = 3.5)
+beta_with_nas <- with_missing_data$beta_with_nas
+na_positions <- with_missing_data$na_positions
+beta_imputed <- methyLImp2(data = beta_with_nas, type = "EPIC")
+evaluatePerformance(beta, beta_imputed, na_positions)
+}
+}

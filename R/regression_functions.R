@@ -4,6 +4,8 @@
 #' @param min a number, default value is 0
 #' @param max a number, default value is 1
 #'
+#' @return A numeric matrix 
+#'
 #' @keywords internal
 
 plogit <- function(x, min = 0, max = 1)
@@ -23,6 +25,8 @@ plogit <- function(x, min = 0, max = 1)
 #' @param min a number, default value is 0
 #' @param max a number, default value is 1
 #'
+#' @return A numeric matrix 
+#' 
 #' @keywords internal
 
 inv.plogit <- function(x, min = 0, max = 1)
@@ -41,6 +45,8 @@ inv.plogit <- function(x, min = 0, max = 1)
 #'
 #' @param X a numeric matrix
 #' @param tol a number, default value is \eqn{sqrt(.Machine$double.eps)}.
+#'
+#' @return A numeric matrix 
 #'
 #' @keywords internal
 

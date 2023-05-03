@@ -38,3 +38,10 @@ A numeric matrix \eqn{out} with imputed data is returned.
 \description{
 This function performs missing value imputation specific for DNA methylation data. The method is based on linear regression since methylation levels show a high degree of inter-sample correlation. Implementation is parallelised over chromosomes since probes on different chromosomes are usually independent.
 }
+\examples{
+\dontrun{
+data(beta)
+beta_with_nas <- generateMissingData(beta, lambda = 3.5)$beta_with_nas
+methyLImp2(data = beta_with_nas, type = "EPIC")
+}
+}

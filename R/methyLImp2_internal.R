@@ -9,6 +9,8 @@
 #'
 #' @importFrom dplyr distinct
 #'
+#' @return A numeric matrix \eqn{out} with imputed data is returned.
+#' 
 #' @keywords internal
 
 methyLImp2_internal <- function(dat,

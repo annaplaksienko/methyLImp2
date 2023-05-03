@@ -13,6 +13,9 @@ inv.plogit(x, min = 0, max = 1)
 
 \item{max}{a number, default value is 1}
 }
+\value{
+A numeric matrix
+}
 \description{
 Inverse of the pseudo-logit function.
 }

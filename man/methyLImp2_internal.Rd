@@ -27,6 +27,9 @@ methyLImp2_internal(
 
 \item{minibatch_reps}{a number, how many times repeat computations with a fraction of samples (more times - better performance). The default is 1 (as a companion to default fraction of 100\%. i.e. no mini-batch).}
 }
+\value{
+A numeric matrix \eqn{out} with imputed data is returned.
+}
 \description{
 Impute missing values in methylation dataset
 }

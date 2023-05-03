@@ -10,6 +10,11 @@
 #' @importFrom stats rpois
 #'
 #' @export
+#' @examples
+#'\dontrun{
+#'data(beta)
+#'generateMissingData(beta, lambda = 3.5)
+#'}
 
 generateMissingData <- function(beta, lambda = NULL) {
   

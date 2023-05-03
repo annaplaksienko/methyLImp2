@@ -13,6 +13,9 @@ plogit(x, min = 0, max = 1)
 
 \item{max}{a number, default value is 1}
 }
+\value{
+A numeric matrix
+}
 \description{
 Pseudo-logit function with range restricted to \eqn{[-X, X]} where \eqn{X} depends on the double machine precision.
 }

@@ -12,6 +12,9 @@ pinvr(X, max.sv = min(dim(X)), tol = sqrt(.Machine$double.eps))
 
 \item{tol}{a number, default value is \eqn{sqrt(.Machine$double.eps)}.}
 }
+\value{
+A numeric matrix
+}
 \description{
 Computes the Moore-Penrose generalized inverse of a matrix. Allows rank reduction of the generalized inverse.
 This function is directly taken from MASS package (code on GPLv3 license) and modified in order to include the rank reduction option. The added code for rank reduction is commented in the implementation.

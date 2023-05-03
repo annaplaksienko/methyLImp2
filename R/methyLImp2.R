@@ -17,6 +17,13 @@
 #' @return A numeric matrix \eqn{out} with imputed data is returned.
 #'
 #' @export
+#' 
+#' @examples
+#'\dontrun{
+#' data(beta)
+#' beta_with_nas <- generateMissingData(beta, lambda = 3.5)$beta_with_nas
+#' methyLImp2(data = beta_with_nas, type = "EPIC")
+#'}
 
 methyLImp2 <- function(data,
                       type = c("450K", "EPIC", "user"),
