@@ -66,3 +66,9 @@ Now we evaluate the performance of the algorithm with root mean square error (RM
 performance <- evaluatePerformance(beta, beta_imputed, na_positions)
 print(performance)
 ```
+
+## Session info
+
+```{r sessionInfo}
+sessionInfo()
+```

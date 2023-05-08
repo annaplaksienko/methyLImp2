@@ -5,13 +5,16 @@
 \alias{beta}
 \title{A subset of GSE199057 dataset for vignette demonstration}
 \format{
-A data frame.
+A data frame
 }
 \source{
 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi
 }
 \usage{
 data(beta)
+}
+\value{
+A data frame.
 }
 \description{
 The GSE199057 Gene Expression Omnibus dataset contains 68 mucosa samples from non-colon-cancer patients, from which we randomly sampled 24. Methylation data were measured on EPIC arrays and after removal of sex chromosomes and SNPs loci, it contains 816 126 probes. We have subset only probes from two chromosomes (18 and 21) for the sake of demonstration.

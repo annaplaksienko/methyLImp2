@@ -2,21 +2,27 @@
 % Please edit documentation in R/regression_functions.R
 \name{pinvr}
 \alias{pinvr}
-\title{Computes the Moore-Penrose generalized inverse of a matrix. Allows rank reduction of the generalized inverse.
-This function is directly taken from MASS package (code on GPLv3 license) and modified in order to include the rank reduction option. The added code for rank reduction is commented in the implementation.}
+\title{Computes the Moore-Penrose generalized inverse of a matrix. 
+Allows rank reduction of the generalized inverse.
+This function is directly taken from MASS package (code on GPLv3 license) 
+and modified in order to include the rank reduction option. 
+The added code for rank reduction is commented in the implementation.}
 \usage{
 pinvr(X, max.sv = min(dim(X)), tol = sqrt(.Machine$double.eps))
 }
 \arguments{
 \item{X}{a numeric matrix}
 
-\item{tol}{a number, default value is \eqn{sqrt(.Machine$double.eps)}.}
+\item{tol}{a number}
 }
 \value{
 A numeric matrix
 }
 \description{
-Computes the Moore-Penrose generalized inverse of a matrix. Allows rank reduction of the generalized inverse.
-This function is directly taken from MASS package (code on GPLv3 license) and modified in order to include the rank reduction option. The added code for rank reduction is commented in the implementation.
+Computes the Moore-Penrose generalized inverse of a matrix. 
+Allows rank reduction of the generalized inverse.
+This function is directly taken from MASS package (code on GPLv3 license) 
+and modified in order to include the rank reduction option. 
+The added code for rank reduction is commented in the implementation.
 }
 \keyword{internal}

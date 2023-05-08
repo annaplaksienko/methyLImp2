@@ -6,7 +6,8 @@
 #'
 #' @usage data(beta)
 #'
-#' @format A data frame.
+#' @format A data frame
+#' @return A data frame.
 #'
 #' @keywords datasets
 #'
@@ -23,6 +24,7 @@
 #' @usage data(anno450K)
 #'
 #' @format A data frame.
+#' @return A data frame.
 #'
 #' @keywords datasets
 #'
@@ -38,7 +40,8 @@
 #'
 #' @usage data(annoEPIC)
 #'
-#' @format A data frame.
+#' @format A data frame
+#' @return A data frame
 #'
 #' @keywords datasets
 #'

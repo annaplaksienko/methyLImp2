@@ -2,7 +2,7 @@
 % Please edit documentation in R/regression_functions.R
 \name{plogit}
 \alias{plogit}
-\title{Pseudo-logit function with range restricted to \eqn{[-X, X]} where \eqn{X} depends on the double machine precision.}
+\title{Pseudo-logit function}
 \usage{
 plogit(x, min = 0, max = 1)
 }
@@ -17,6 +17,6 @@ plogit(x, min = 0, max = 1)
 A numeric matrix
 }
 \description{
-Pseudo-logit function with range restricted to \eqn{[-X, X]} where \eqn{X} depends on the double machine precision.
+Pseudo-logit function
 }
 \keyword{internal}

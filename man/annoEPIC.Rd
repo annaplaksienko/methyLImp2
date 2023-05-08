@@ -5,13 +5,16 @@
 \alias{annoEPIC}
 \title{Annotation for EPIC array}
 \format{
-A data frame.
+A data frame
 }
 \source{
 https://support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-kit/downloads.html
 }
 \usage{
 data(annoEPIC)
+}
+\value{
+A data frame
 }
 \description{
 Data matches each probe of Illumina EPIC array to a chromosome. Information is from https://support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-kit/downloads.html -> Infinium MethylationEPIC v1.0 Product Files (Legacy BeadChip) -> Infinium MethylationEPIC v1.0 B5 Manifest File (CSV Format). Pre-processing can be found on the _methyLImp_ simulation github page.
