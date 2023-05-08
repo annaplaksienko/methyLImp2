@@ -15,8 +15,8 @@
 #' the default range is \eqn{[0, 1]}. 
 #' However, if a user wishes to apply the method to other kind of data, 
 #' they can change the range in this argument.
-#' @param col.list a numeric vector, restricts the imputation only to the 
-#' specified columns. If \code{NULL}, all columns are considered.
+#' @param col.list a numeric vector of ids of the columns with NAs for which 
+#' \emph{not} to perform the imputation. If \code{NULL}, all columns are considered.
 #' @param ncores number of cores to use in parallel computation. 
 #' If \code{NULL}, set to \eqn{\#physical cores - 1}.
 #' @param minibatch_frac a number, what percentage of samples to use for 

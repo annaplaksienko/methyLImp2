@@ -1,11 +1,20 @@
 #' Impute missing values in methylation dataset
 #'
-#' @param dat a numeric data matrix with missing values, with samples in rows and variables (probes) in columns.
-#' @param min a number, minimum value for bounded-range variables. Default is 0 (we assume beta-value representation of the methylation data). Can be user provided in case of other types of data.
-#' @param max a number, maximum value for bounded-range variables. Default is 1 (we assume beta-value representation of the methylation data). Can be user provided in case of other types of data.
-#' @param col.list a numeric vector, restricts the imputation only to the specified columns. If \code{NULL}, all columns are considered.
-#' @param minibatch_frac a number, what percentage of samples to use for mini-batch computation. The default is 1 (i.e., 100\% of samples are used, no mini-batch).
-#' @param minibatch_reps a number, how many times repeat computations with a fraction of samples (more times - better performance). The default is 1 (as a companion to default fraction of 100\%. i.e. no mini-batch).
+#' @param dat a numeric data matrix with missing values, 
+#' with samples in rows and variables (probes) in columns.
+#' @param min a number, minimum value for bounded-range variables. 
+#' Default is 0 (we assume beta-value representation of the methylation data). 
+#' Can be user provided in case of other types of data.
+#' @param max a number, maximum value for bounded-range variables. 
+#' Default is 1 (we assume beta-value representation of the methylation data). 
+#' Can be user provided in case of other types of data.
+#' @param col.list a numeric vector of ids of the columns with NAs for which 
+#' \emph{not} to perform the imputation. If \code{NULL}, all columns are considered.
+#' @param minibatch_frac a number, what percentage of samples to use for 
+#' mini-batch computation. The default is 1 (i.e., 100\% of samples are used, no mini-batch).
+#' @param minibatch_reps a number, how many times repeat computations with a 
+#' fraction of samples (more times - better performance). 
+#' The default is 1 (as a companion to default fraction of 100\%. i.e. no mini-batch).
 #'
 #' @importFrom dplyr distinct
 #'
@@ -42,10 +51,7 @@ methyLImp2_internal <- function(dat,
         } else {
           message("#columns with #NAs < (#samples - 1): ", dim(dat_na)[2])
         }
-
-        #if some columns are restricted by user, exclude them
-        #if(!is.null(col.list)) dat_na <- dat_na[, !col.list]
-    
+        
         unique_patterns <- as.matrix(distinct(as.data.frame(t(dat_na))))
         ngroups <- dim(unique_patterns)[1]
         message("#regression groups: ", ngroups)
@@ -57,11 +63,15 @@ methyLImp2_internal <- function(dat,
     
           col_match <- apply(dat_na, 2, function(x) identical(x, curr_pattern))
           col_match <- colnames(dat_na)[col_match]
-          NAcols_rowid <- which(colnames_dat %in% col_match)
-    
+          NAcols_id <- which(colnames_dat %in% col_match)
+          #if some of the chosen columns are restricted by user, exclude them
+          if(!is.null(col.list)) {
+              NAcols_id <- NAcols_id[!(NAcols_id %in% col.list)]
+          }
+          
           row_id <- which(curr_pattern == TRUE)
     
-          ids[[i]] <- list(row_id = row_id, NAcols_rowid = NAcols_rowid)
+          ids[[i]] <- list(row_id = row_id, NAcols_id = NAcols_id)
         }
 
         names(ids) <- paste("group", c(1:ngroups), sep = "_")
@@ -71,12 +81,12 @@ methyLImp2_internal <- function(dat,
     out <- dat
     for (i in 1:ngroups) {
         row_id <- ids[[i]]$row_id
-        NAcols_rowid <- ids[[i]]$NAcols_rowid
+        NAcols_id <- ids[[i]]$NAcols_id
 
         C <- dat[row_id, -all_NA_cols]
     
         A_full <- dat[-row_id, -all_NA_cols]
-        B_full <- dat[-row_id, NAcols_rowid]
+        B_full <- dat[-row_id, NAcols_id]
 
         imputed_list <- vector(mode = "list", length = minibatch_reps)
         for (r in 1:minibatch_reps) {
@@ -111,7 +121,7 @@ methyLImp2_internal <- function(dat,
 
         imputed <- Reduce('+', imputed_list) / minibatch_reps
         #test2[[i]] <- imputed
-        out[row_id, NAcols_rowid] <- imputed
+        out[row_id, NAcols_id] <- imputed
   }
 
     return(out)
