@@ -33,7 +33,7 @@ data(beta)
 with_missing_data <- generateMissingData(beta, lambda = 3.5)
 beta_with_nas <- with_missing_data$beta_with_nas
 na_positions <- with_missing_data$na_positions
-beta_imputed <- methyLImp2(data = beta_with_nas, type = "EPIC", 
+beta_imputed <- methyLImp2(input = beta_with_nas, type = "EPIC", 
                           minibatch_frac = 0.5, ncores = 1)
 evaluatePerformance(beta, beta_imputed, na_positions)
 }

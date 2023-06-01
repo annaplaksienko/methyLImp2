@@ -24,7 +24,7 @@ In this vignette we demonstrate the usage of the *methyLImp* method for the impu
 
 First, we demonstrate how we add artifical NAs into the dataset and memorize their positions so that we cal later evaluate the performance of the method.
 
-Here we use a subset of GSE199057 Gene Expression Omnibus dataset with mucosa samples from non-colon-cancer patients.  Methylation data were measured on EPIC arrays. For the sake of vignette, we reduce the number of samples from 68 to randomly sampled 24. We also restrict the dataset to the two shortest chromosomes, 18 and 21, so the total number of probes is 24 273. We refer the reader to our simulation studies for full size dataset results.
+Here we use a subset of GSE199057 Gene Expression Omnibus dataset with mucosa samples from non-colon-cancer patients.  Methylation data were measured on EPIC arrays. For the sake of vignette, we reduce the number of samples from 68 to randomly sampled 24. We also restrict the dataset to the two shortest chromosomes, 18 and 21, so the total number of probes is 24 273. We refer the reader to our [simulation studies](https://github.com/annaplaksienko/methyLImp2_simulation_studies) for full size dataset results.
 
 ```{r generate artifical NAs}
 #load the dataset from the package
@@ -38,20 +38,22 @@ na_positions <- with_missing_data$na_positions
 
 ## Using methyLImp
 
-Now, let's run *methyLImp*! Be default, the only two things you have to provide are the data matrix and the type of the data: 450K or EPIC. But here are a few other things you can tune so that the method suits your needs best: 
+Now, let's run *methyLImp*! You start by providing either a numeric data matrix with missing values, with samples in rows and variables (probes) in columns, or a SummarizedExperiment object, from which the first assays slot will be imputed (here we provide a numeric matrix). If you used SummarizedExperiment object as an input, information about data type (450k or EPIC) will be retrieved from the annotation slot. If you used a numeric matrix, then you have to specify the type yourself in the second argument (here we specify "EPIC"). These are the only two arguments you have to provide. However, there are a few other things you can tune so that the method suits your needs best: 
 
-* specify the type of data as "user-provided": then you can provide your own annotation instead of those coming with the package; 
+* specify what groups you have in your data: *methyLImp* works best when imputation is done on each group of samples independetly. Therefore, you should specify the correspondence of samples to groups. Here we've already pre-filtered the data to only have one group, so we do not use this argument;
 
-* choose the number of cores: *methyLImp* first splits the data by chromosomes and then does imputation in parallel. By default the number of cores will be one less than total number of your physical cores, but you can decrease it. Here we use since our dataset is small for the purpose of the vignette but we encourage you to increase it; 
+* specify the type of data as "user-provided": type of data (450k or EPIC) is used to split CpGs across chromosomes. Match of CpGs to chromosomes is taken from Illumina website. However, it is a part of the package and is not dynamically updated. Therefore, if you wish to provide your own match, specify "user" in the type argument and provide a data frame with in the annotation argument; 
+
+* choose the number of cores: *methyLImp* first splits the data by chromosomes and then does imputation in parallel. By default the number of cores will be one less than total number of your physical cores, but you can decrease it. Here we use 2 since for the purpose of the vignette our dataset is small but we encourage you to increase this number; 
 
 * set up mini-batch computation: if your dataset is quite big sample-wise, you can opt to use only a fraction of samples for the imputation to decrease the running time, say 10, 20, 50% (depending on the original number of samples). Subsample will be chosen randomly for each calculation. The bigger the subsample - the better is the performance, hence by default it is 1. An option to improve the performance but still keep the running time low is to repeat computation for a (randomly chosen) fraction of samples several times, maybe 2, 3, 5. In the paper we explore how these two tuning parameters influence the running time and the performance.
 
-The output matrix is the original one with imputed values instead of NAs.
+The output matrix here is the original one with imputed values instead of NAs.
 
 Note that running time should take around 2 to 3 minutes depending on your machine.
 
 ```{r run methyLImp}
-time <- system.time(beta_imputed <- methyLImp2(data = beta_with_nas, 
+time <- system.time(beta_imputed <- methyLImp2(input = beta_with_nas, 
                                                type = "EPIC", 
                                                ncores = 2,
                                                minibatch_frac = 0.5))
