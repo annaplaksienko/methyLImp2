@@ -16,13 +16,14 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(methyLImp2)
+library(SummarizedExperiment)
 ```
 
 In this vignette we demonstrate the usage of the *methyLImp* method for the imputation of the missing values in the methylation dataset. The vignette consists of three parts: generation of the artifical missing values into example dataset (since we need to know the true values for the performance evaluation), application of *methyLImp2* and performance evaluation (we compare imputed values with the true ones).
 
 ##Missing values generation
 
-First, we demonstrate how we add artifical NAs into the dataset and memorize their positions so that we cal later evaluate the performance of the method.
+First, we demonstrate how we add artifical NAs into the dataset and memorize their positions so that we can later evaluate the performance of the method.
 
 Here we use a subset of GSE199057 Gene Expression Omnibus dataset with mucosa samples from non-colon-cancer patients.  Methylation data were measured on EPIC arrays. For the sake of vignette, we reduce the number of samples from 68 to randomly sampled 24. We also restrict the dataset to the two shortest chromosomes, 18 and 21, so the total number of probes is 24 273. We refer the reader to our [simulation studies](https://github.com/annaplaksienko/methyLImp2_simulation_studies) for full size dataset results.
 
@@ -36,11 +37,17 @@ beta_with_nas <- with_missing_data$beta_with_nas
 na_positions <- with_missing_data$na_positions
 ```
 
+You can provide a numeric matrix as an argument for *methyLImp*. However, as many users work with SummarizedExperiment objects in the Bioconductor workflow, we will construct such object here for the sake of demonstration. 
+```{r construct SE}
+data(beta_meta)
+beta_SE <- SummarizedExperiment(assays = list(t(beta_with_nas)), colData = beta_meta)
+```
+
 ## Using methyLImp
 
-Now, let's run *methyLImp*! You start by providing either a numeric data matrix with missing values, with samples in rows and variables (probes) in columns, or a SummarizedExperiment object, from which the first assays slot will be imputed (here we provide a numeric matrix). If you used SummarizedExperiment object as an input, information about data type (450k or EPIC) will be retrieved from the annotation slot. If you used a numeric matrix, then you have to specify the type yourself in the second argument (here we specify "EPIC"). These are the only two arguments you have to provide. However, there are a few other things you can tune so that the method suits your needs best: 
+Now, let's run *methyLImp*! You start by providing either a numeric data matrix with missing values, with samples in rows and variables (probes) in columns, or a SummarizedExperiment object, from which the first assays slot will be imputed (here we provide a numeric matrix). You also need to provide the type of your data - 450k or EPIC. These are the only two arguments you have to provide. However, there are a few other things you can tune so that the method suits your needs best: 
 
-* specify what groups you have in your data: *methyLImp* works best when imputation is done on each group of samples independetly. Therefore, you should specify the correspondence of samples to groups. Here we've already pre-filtered the data to only have one group, so we do not use this argument;
+* specify what groups you have in your data: *methyLImp* works best when imputation is done on each group of samples independetly. Therefore, you should specify the correspondence of samples to groups. Here we've already pre-filtered the data to only have one group, so we do not use this argument here;
 
 * specify the type of data as "user-provided": type of data (450k or EPIC) is used to split CpGs across chromosomes. Match of CpGs to chromosomes is taken from Illumina website. However, it is a part of the package and is not dynamically updated. Therefore, if you wish to provide your own match, specify "user" in the type argument and provide a data frame with in the annotation argument; 
 
@@ -53,11 +60,11 @@ The output matrix here is the original one with imputed values instead of NAs.
 Note that running time should take around 2 to 3 minutes depending on your machine.
 
 ```{r run methyLImp}
-time <- system.time(beta_imputed <- methyLImp2(input = beta_with_nas, 
+time <- system.time(beta_SE_imputed <- methyLImp2(beta_SE, 
                                                type = "EPIC", 
                                                ncores = 2,
                                                minibatch_frac = 0.5))
-print(paste0("Runtime was ", time[3], " seconds."))
+print(paste0("Runtime was ", round(time[3], digits = 2), " seconds."))
 ```
 
 ## Performance evaluation
@@ -65,7 +72,7 @@ print(paste0("Runtime was ", time[3], " seconds."))
 Now we evaluate the performance of the algorithm with root mean square error (RMSE) and mean absolute error (MAE): the lower the values are, the better.
 
 ```{r evaluate performance}
-performance <- evaluatePerformance(beta, beta_imputed, na_positions)
+performance <- evaluatePerformance(beta, t(assays(beta_SE_imputed)[[1]]), na_positions)
 print(performance)
 ```
 

@@ -21,11 +21,9 @@ methyLImp2(
 with samples in rows and variables (probes) in columns, or a SummarizedExperiment
 object, from which the first assays slot will be imputed.}
 
-\item{type}{a type of data, 450K or EPIC. If you used SummarizedExperiment object
-as an input, this information will be retrieved from the annotation slot.
-If you used a numeric matrix, then you have to specify the type yourself. Type 
-is used to split CpGs across chromosomes. Match of CpGs to chromosomes is taken
-from Illumina website. However, it is a part of the package and is not dynamically 
+\item{type}{a type of data, 450K or EPIC. Type is used to split CpGs across 
+chromosomes. Match of CpGs to chromosomes is taken from Illumina website. 
+However, it is a part of the package and is not dynamically 
 updated. Therefore, if you wish to provide your own match, specify "user" in this
 argument and provide a data frame in the next argument.}
 

@@ -1,4 +1,9 @@
-CHANGES IN VERSION 0.99.1
+CHANGES IN VERSION 0.99.2 (Release date: 2023-06-12)
+------------------------
+
+    o Change vignette example data to SummarizedExperiment.
+
+CHANGES IN VERSION 0.99.1 (Release date: 2023-06-01)
 ------------------------
 
     o Change of possible input: either numeric matrix or SummarizedExperiment;

@@ -5,11 +5,9 @@
 #' @param input either a numeric data matrix with missing values, 
 #' with samples in rows and variables (probes) in columns, or a SummarizedExperiment
 #' object, from which the first assays slot will be imputed.
-#' @param type a type of data, 450K or EPIC. If you used SummarizedExperiment object
-#' as an input, this information will be retrieved from the annotation slot.
-#' If you used a numeric matrix, then you have to specify the type yourself. Type 
-#' is used to split CpGs across chromosomes. Match of CpGs to chromosomes is taken
-#' from Illumina website. However, it is a part of the package and is not dynamically 
+#' @param type a type of data, 450K or EPIC. Type is used to split CpGs across 
+#' chromosomes. Match of CpGs to chromosomes is taken from Illumina website. 
+#' However, it is a part of the package and is not dynamically 
 #' updated. Therefore, if you wish to provide your own match, specify "user" in this
 #' argument and provide a data frame in the next argument. 
 #' @param annotation a data frame, user provided match between CpG sites and chromosomes. 
@@ -69,36 +67,19 @@ methyLImp2 <- function(input,
     if (is.matrix(input)) {
         if (is.numeric(input)) {
             data_full <- input
-            type <- match.arg(type)
             flag <- "matrix"
         } else {
             stop("The input matrix is not numeric.") 
         }
     } else if (is(input, "SummarizedExperiment")) {
         data_full <- t(assays(input)[[1]])
-        type_temp <- match.arg(type)
         flag <- "SE"
-        if (!is.null(type_temp)) {
-            if (type_temp != "user") {
-                type_temp <- annotation(input)[1]
-                if (is.null(type_temp)) {
-                    stop("Annotation slot of your SummarizedExperiment input is empty.")
-                } else if (type_temp == "IlluminaHumanMethylation450k") {
-                    type <- "450K"
-                } else if (type_temp == "IlluminaHumanMethylationEPIC") {
-                    type <- "EPIC"
-                } else {
-                    stop("Information in the annotation slot of your SummarizedExperiment input does not match either 450k or EPIC. Please check.")
-                }
-            } else {
-                type <- "user"
-            }
-        }
     } else {
         stop("Input is not a matrix or a SummarizedExperiment object.")
     }
     
     #load annotation
+    type <- match.arg(type)
     if (type == "450K") {
         data("anno450K")
         anno <- anno450K
