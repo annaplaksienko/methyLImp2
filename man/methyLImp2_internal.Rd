@@ -30,7 +30,8 @@ Can be user provided in case of other types of data.}
 \emph{not} to perform the imputation. If \code{NULL}, all columns are considered.}
 
 \item{minibatch_frac}{a number, what percentage of samples to use for 
-mini-batch computation. The default is 1 (i.e., 100\% of samples are used, no mini-batch).}
+mini-batch computation. The default is 1 (i.e., 100\% of samples are used, 
+no mini-batch).}
 
 \item{minibatch_reps}{a number, how many times repeat computations with a 
 fraction of samples (more times - better performance). 

@@ -13,7 +13,8 @@ generateMissingData(beta, lambda = NULL)
 indicate how many samples will have missing values in each selected probe.}
 }
 \value{
-A numeric data matrix with generated NAs in some entries and positions of those NAs.
+A numeric data matrix with generated NAs in some entries and 
+positions of those NAs.
 }
 \description{
 This function generates missing values for the simulation purposes 

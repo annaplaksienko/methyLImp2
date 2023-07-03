@@ -11,7 +11,8 @@
 #' @param col.list a numeric vector of ids of the columns with NAs for which 
 #' \emph{not} to perform the imputation. If \code{NULL}, all columns are considered.
 #' @param minibatch_frac a number, what percentage of samples to use for 
-#' mini-batch computation. The default is 1 (i.e., 100\% of samples are used, no mini-batch).
+#' mini-batch computation. The default is 1 (i.e., 100\% of samples are used, 
+#' no mini-batch).
 #' @param minibatch_reps a number, how many times repeat computations with a 
 #' fraction of samples (more times - better performance). 
 #' The default is 1 (as a companion to default fraction of 100\%. i.e. no mini-batch).
@@ -58,7 +59,7 @@ methyLImp2_internal <- function(dat,
     
         ids <- vector(mode = "list", length = ngroups)
 
-        for (i in 1:ngroups) {
+        for (i in seq_len(ngroups)) {
           curr_pattern <- unique_patterns[i, ]
     
           col_match <- apply(dat_na, 2, function(x) identical(x, curr_pattern))
@@ -74,12 +75,12 @@ methyLImp2_internal <- function(dat,
           ids[[i]] <- list(row_id = row_id, NAcols_id = NAcols_id)
         }
 
-        names(ids) <- paste("group", c(1:ngroups), sep = "_")
+        names(ids) <- paste("group", seq_len(ngroups), sep = "_")
 
   }
 
     out <- dat
-    for (i in 1:ngroups) {
+    for (i in seq_len(ngroups)) {
         row_id <- ids[[i]]$row_id
         NAcols_id <- ids[[i]]$NAcols_id
 
@@ -89,11 +90,13 @@ methyLImp2_internal <- function(dat,
         B_full <- dat[-row_id, NAcols_id]
 
         imputed_list <- vector(mode = "list", length = minibatch_reps)
-        for (r in 1:minibatch_reps) {
-          sample_size <- ifelse(dim(A_full)[1] > ceiling(dim(A_full)[1] * minibatch_frac),
+        for (r in seq_len(minibatch_reps)) {
+          sample_size <- ifelse(dim(A_full)[1] > ceiling(dim(A_full)[1] * 
+                                                             minibatch_frac),
                                 ceiling(dim(A_full)[1] * minibatch_frac),
                                 dim(A_full)[1])
-          chosen_rows <- sort(sample(1:dim(A_full)[1], size = sample_size))
+          chosen_rows <- sort(sample(seq_len(dim(A_full)[1]), 
+                                     size = sample_size))
           A <- A_full[chosen_rows, , drop = FALSE]
           if (is.null(dim(B_full))) {
             B <- B_full[chosen_rows]

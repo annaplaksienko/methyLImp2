@@ -14,7 +14,8 @@
 #' on them since we do not know real value. 
 #' Therefore, we need to know the positions of artificial NAs. 
 #' 
-#' @return A numerical vector of two numbers, root mean square error and mean absolute error.
+#' @return A numerical vector of two numbers, root mean square error 
+#' and mean absolute error.
 #'
 #' @export
 #' 
@@ -37,7 +38,7 @@ evaluatePerformance <- function(beta_true, beta_imputed, na_positions) {
     #initiate the sum that in the end we'll divide by total_nna        
     RMSE_sum <- MAE_sum <- 0
   
-    for (l in 1:nna) {
+    for (l in seq_len(nna)) {
         col <- na_positions[[l]]$na_col
         rows <- na_positions[[l]]$na_rows 
     

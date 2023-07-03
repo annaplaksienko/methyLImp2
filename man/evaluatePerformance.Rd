@@ -19,7 +19,8 @@ on them since we do not know real value.
 Therefore, we need to know the positions of artificial NAs.}
 }
 \value{
-A numerical vector of two numbers, root mean square error and mean absolute error.
+A numerical vector of two numbers, root mean square error 
+and mean absolute error.
 }
 \description{
 This function computes root mean square error and mean absolute error as 

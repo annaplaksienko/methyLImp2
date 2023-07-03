@@ -17,6 +17,10 @@ data(anno450K)
 A data frame.
 }
 \description{
-Data matches each probe of Illumina 450K array to a chromosome. Information is from https://support.illumina.com/array/array_kits/infinium_humanmethylation450_beadchip_kit/downloads.html -> Infinium HumanMethylation450K v1.2 Product Files -> HumanMethylation450 v1.2 Manifest File (CSV Format). Pre-processing can be found on the _methyLImp_ simulation github page.
+Data matches each probe of Illumina 450K array to a chromosome. 
+Information is from https://support.illumina.com/array/array_kits/infinium_humanmethylation450_beadchip_kit/downloads.html -> 
+Infinium HumanMethylation450K v1.2 Product Files -> 
+HumanMethylation450 v1.2 Manifest File (CSV Format). 
+Pre-processing can be found on the _methyLImp_ simulation github page.
 }
 \keyword{datasets}
