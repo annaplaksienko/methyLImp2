@@ -10,7 +10,7 @@ methyLImp2(
   annotation = NULL,
   range = NULL,
   groups = NULL,
-  col.list = NULL,
+  skip_imputation_ids = NULL,
   ncores = NULL,
   minibatch_frac = 1,
   minibatch_reps = 1
@@ -18,8 +18,9 @@ methyLImp2(
 }
 \arguments{
 \item{input}{either a numeric data matrix with missing values, 
-with samples in rows and variables (probes) in columns, or a 
-SummarizedExperiment object, from which the first assays slot will be imputed.}
+with samples in rows and variables (probes) in named columns, or a 
+SummarizedExperiment object, from which the first assays slot (with 
+variables in rows and samples in columns, as standard) will be imputed.}
 
 \item{type}{a type of data, 450K or EPIC. Type is used to split CpGs across 
 chromosomes. Match of CpGs to chromosomes is taken from Illumina website. 
@@ -40,11 +41,11 @@ they can change the range in this argument.}
 
 \item{groups}{a vector of the same length as the number of samples that 
 identifies what groups does each sample correspond. Unique elements of the 
-vector will be indentified as groups and data will be split according to 
+vector will be identified as groups and data will be split according to 
 them. Imputation will be done for each group separately. The default is NULL, 
 so all is considered as one group.}
 
-\item{col.list}{a numeric vector of ids of the columns with NAs for which 
+\item{skip_imputation_ids}{a numeric vector of ids of the columns with NAs for which 
 \emph{not} to perform the imputation. If \code{NULL}, all columns are considered.}
 
 \item{ncores}{number of cores to use in parallel computation. 
@@ -62,8 +63,8 @@ a fraction of samples (more times -> better performance). The default is 1
 (as a companion to default fraction of 100\%. i.e. no mini-batch).}
 }
 \value{
-Either a numeric matrix \eqn{out} with imputed data or a 
-SummarizedExperiment object where the assay slot is replaced with imputed data.
+Either a numeric matrix with imputed data or a SummarizedExperiment 
+object where the assay slot is replaced (!) with imputed data.
 }
 \description{
 This function performs missing value imputation specific for DNA methylation 
@@ -72,10 +73,8 @@ show a high degree of inter-sample correlation. Implementation is
 parallelised over chromosomes to improve the running time.
 }
 \examples{
-{
 data(beta)
 beta_with_nas <- generateMissingData(beta, lambda = 3.5)$beta_with_nas
 beta_imputed <- methyLImp2(input = beta_with_nas, type = "EPIC", 
                           minibatch_frac = 0.5, ncores = 1)
-}
 }

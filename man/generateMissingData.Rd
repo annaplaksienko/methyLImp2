@@ -2,7 +2,7 @@
 % Please edit documentation in R/generateMissingData.R
 \name{generateMissingData}
 \alias{generateMissingData}
-\title{Generation of artifical missing values}
+\title{Generation of artificial missing values}
 \usage{
 generateMissingData(beta, lambda = NULL)
 }
@@ -13,8 +13,8 @@ generateMissingData(beta, lambda = NULL)
 indicate how many samples will have missing values in each selected probe.}
 }
 \value{
-A numeric data matrix with generated NAs in some entries and 
-positions of those NAs.
+A list with two slots: a numeric data matrix with generated NAs in 
+some entries and a list of positions of those NAs.
 }
 \description{
 This function generates missing values for the simulation purposes 
@@ -28,8 +28,6 @@ size of the dataset (unless specified by the user, here we use
 randomly placed among the samples.
 }
 \examples{
-{
 data(beta)
 beta_with_nas <- generateMissingData(beta, lambda = 3.5)
-}
 }

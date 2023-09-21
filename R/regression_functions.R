@@ -1,6 +1,6 @@
 #' Pseudo-logit function 
 #'
-#' @param x a numeric matrix
+#' @param X a numeric matrix
 #' @param min a number, default value is 0
 #' @param max a number, default value is 1
 #'
@@ -8,9 +8,9 @@
 #'
 #' @keywords internal
 
-plogit <- function(x, min = 0, max = 1)
+plogit <- function(X, min = 0, max = 1)
 {
-    p <- (x - min) / (max - min)
+    p <- (X - min) / (max - min)
     # fix -Inf
     p <- ifelse(p < .Machine$double.neg.eps, .Machine$double.neg.eps, p)
     # fix +Inf
@@ -21,7 +21,7 @@ plogit <- function(x, min = 0, max = 1)
 
 #' Inverse of the pseudo-logit function.
 #'
-#' @param x a numeric matrix
+#' @param X a numeric matrix
 #' @param min a number, default value is 0
 #' @param max a number, default value is 1
 #'
@@ -29,11 +29,11 @@ plogit <- function(x, min = 0, max = 1)
 #' 
 #' @keywords internal
 
-inv.plogit <- function(x, min = 0, max = 1)
+inv.plogit <- function(X, min = 0, max = 1)
 {
-    p <- exp(x) / (1 + exp(x))
+    p <- exp(X) / (1 + exp(X))
     # fix problems with +Inf
-    p <- ifelse(is.na(p) & !is.na(x), 1, p )
+    p <- ifelse(is.na(p) & !is.na(X), 1, p )
     # fix 0 rounding
     p <- ifelse(p <= exp(plogit(0)) / (1 + exp(plogit(0))), 0, p)
     p * (max - min) + min

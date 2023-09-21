@@ -8,10 +8,9 @@ methyLImp2_internal(
   dat,
   min,
   max,
-  col.list,
+  skip_imputation_ids,
   minibatch_frac,
-  minibatch_reps,
-  max.sv = NULL
+  minibatch_reps
 )
 }
 \arguments{
@@ -26,7 +25,7 @@ Can be user provided in case of other types of data.}
 Default is 1 (we assume beta-value representation of the methylation data). 
 Can be user provided in case of other types of data.}
 
-\item{col.list}{a numeric vector of ids of the columns with NAs for which 
+\item{skip_imputation_ids}{a numeric vector of ids of the columns with NAs for which 
 \emph{not} to perform the imputation. If \code{NULL}, all columns are considered.}
 
 \item{minibatch_frac}{a number, what percentage of samples to use for 

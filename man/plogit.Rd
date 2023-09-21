@@ -4,10 +4,10 @@
 \alias{plogit}
 \title{Pseudo-logit function}
 \usage{
-plogit(x, min = 0, max = 1)
+plogit(X, min = 0, max = 1)
 }
 \arguments{
-\item{x}{a numeric matrix}
+\item{X}{a numeric matrix}
 
 \item{min}{a number, default value is 0}
 

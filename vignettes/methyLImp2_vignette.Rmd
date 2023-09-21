@@ -1,13 +1,16 @@
 ---
-title: "methyLImp2_vignette"
-output: rmarkdown::html_vignette
+title: "methyLImp2 vignette"
+author: "Anna Plaksienko"
+package: methyLImp2
+output: 
+    BiocStyle::html_document
 vignette: >
-  %\VignetteIndexEntry{methyLImp2_vignette}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+    %\VignetteIndexEntry{Vignette Title}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}  
 ---
 
-```{r, include = FALSE}
+```{r knitr options, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -18,42 +21,72 @@ knitr::opts_chunk$set(
 library(methyLImp2)
 library(SummarizedExperiment)
 ```
+# Introduction
 
-In this vignette we demonstrate the usage of the *methyLImp* method for the imputation of the missing values in the methylation dataset. The vignette consists of three parts: generation of the artifical missing values into example dataset (since we need to know the true values for the performance evaluation), application of *methyLImp2* and performance evaluation (we compare imputed values with the true ones).
+DNA methylation profiles often contain multiple missing values due to some technological problems. Meanwhile, methods for downstream analysis of such data require you to perform imputation of those missing values first. Although several imputation methods exist, most are inefficient with large dimensions and are not specific to methylation datasets. Previously, we have introduced *methyLImp* - imputation method that exploits inter-sample correlation in the methylation data in its model and also does imputation simultaneously for all CpGs with the same missingness pattern (i.e. NAs in the same samples). Although it demonstrated great performance in comparison with other methods (see [here](https://pubmed.ncbi.nlm.nih.gov/30796811/)), there was still a room for improvement in terms of the running time. Therefore, we upgraded it to *methyLImp2*!
 
-##Missing values generation
+This version is parallelized over chromosomes and, optionally, in case of large sample size, can use mini-batch approach. In our simulation study this two improvements allowed to reduce running time from more than a day to just half an hour for the EPIC dataset of 456 samples!
 
-First, we demonstrate how we add artifical NAs into the dataset and memorize their positions so that we can later evaluate the performance of the method.
+In this vignette we will demonstrate the usage of the *methyLImp2* for the imputation of the missing values in the methylation dataset. 
 
-Here we use a subset of GSE199057 Gene Expression Omnibus dataset with mucosa samples from non-colon-cancer patients.  Methylation data were measured on EPIC arrays. For the sake of vignette, we reduce the number of samples from 68 to randomly sampled 24. We also restrict the dataset to the two shortest chromosomes, 18 and 21, so the total number of probes is 24 273. We refer the reader to our [simulation studies](https://github.com/annaplaksienko/methyLImp2_simulation_studies) for full size dataset results.
+## Installation
+To install *methyLImp2* from Bioconductor, run
+```{r installation, eval = FALSE}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
 
-```{r generate artifical NAs}
-#load the dataset from the package
+BiocManager::install("methyLImp2")
+```
+
+
+# Using *methyLImp2*
+
+In this section we demonstrate the usage of the *methyLImp2* method. This section consists of four parts: data description, generation of the artificial missing values into example dataset (since we need to know the true values for the performance evaluation), application of *methyLImp2* method and then performance evaluation (we compare imputed values with the true ones). 
+
+## About the data
+
+Typically, imputation of the missing values is done before any other steps, like normalization, data exploration, analysis etc. Note that some packages do imputation while loading .idat files into R, so then you should set that step accordingly, to be able to use *methyLImp* after loading the data.
+
+Here we use a subset of GSE199057 Gene Expression Omnibus dataset with mucosa samples from non-colon-cancer patients.  Methylation data were measured on EPIC arrays. For the sake of vignette, we reduce the number of samples from 68 to randomly sampled 24. We also restrict the dataset to the two shortest chromosomes, 18 and 21, and filtered out SNPs, so the total number of probes is 24 273. We refer the reader to our [simulation studies](https://github.com/annaplaksienko/methyLImp2_simulation_studies) for full size dataset performance and running time results. 
+
+This dataset is a numeric matrix. You can use it as an input for *methyLImp2*. Data should be in a "tidy" format, i.e. with samples in rows and variables (probes, CpGs) in columns. However, if you use another possible input format, SummarizedExperiment, dimensions should be reversed (see later).
+
+```{r load the dataset}
 data(beta)
 print(dim(beta))
+```
 
+
+## Missing values generation
+
+Here we add artificial NAs into the dataset and memorize their positions so that we can later evaluate the performance of the method. We first randomly chose 3\% of probes to have artificial NAs. Then, for each probe, we randomly defined the number of NAs from a Poisson distribution with $\lambda$ appropriate to the sample size of the dataset (here for 24 samples we use $\lambda = 3.5$). Finally, these NAs are randomly placed among the samples. 
+
+`generateMissingData` function returns a list of two objects: matrix of beta values with artificial NAs and a list of positions of those NAs (columns and then rows for each column). We'll need that second object to be able to evaluate performance later (since the dataset already has some ''natural'' and, therefore, "unevaluatable" NAs, we can't just directly compare two matrices, we need to know which entries to compare.)
+
+```{r generate artificial NAs}
 with_missing_data <- generateMissingData(beta, lambda = 3.5)
 beta_with_nas <- with_missing_data$beta_with_nas
 na_positions <- with_missing_data$na_positions
 ```
 
-You can provide a numeric matrix as an argument for *methyLImp*. However, as many users work with SummarizedExperiment objects in the Bioconductor workflow, we will construct such object here for the sake of demonstration. 
+As already mentioned, you can provide a numeric matrix as an argument for *methyLImp2*. However, as many users work with SummarizedExperiment objects in the Bioconductor workflow, we will construct such object here for the sake of demonstration. Note how we transpose the matrix since typical assay format is variables in rows and samples in columns. 
 ```{r construct SE}
 data(beta_meta)
-beta_SE <- SummarizedExperiment(assays = list(t(beta_with_nas)), colData = beta_meta)
+beta_SE <- SummarizedExperiment(assays = list(t(beta_with_nas)), 
+                                colData = beta_meta)
 ```
 
-## Using methyLImp
+## Using methyLImp2
 
-Now, let's run *methyLImp*! You start by providing either a numeric data matrix with missing values, with samples in rows and variables (probes) in columns, or a SummarizedExperiment object, from which the first assays slot will be imputed (here we provide a numeric matrix). You also need to provide the type of your data - 450k or EPIC. These are the only two arguments you have to provide. However, there are a few other things you can tune so that the method suits your needs best: 
+Now, let's run *methyLImp2*! You start by providing either a numeric data matrix with missing values, with samples in rows and variables (probes) in columns, or a SummarizedExperiment object, from which the first assays slot will be imputed. You also need to provide the type of your data - 450k or EPIC. These are the only two arguments you have to provide. However, there are a few other things you can tune so that the method suits your needs best: 
 
-* specify what groups you have in your data: *methyLImp* works best when imputation is done on each group of samples independetly. Therefore, you should specify the correspondence of samples to groups. Here we've already pre-filtered the data to only have one group, so we do not use this argument here;
+* Specify what groups you have in your data. *methyLImp2* works best when imputation is done on each group of samples independently. Therefore, you should specify the correspondence of samples to groups. *methyLImp2* will split the data by groups, perform imputation and put the data back together. Here we've already pre-filtered the data to only one group, so we do not use this argument;
 
-* specify the type of data as "user-provided": type of data (450k or EPIC) is used to split CpGs across chromosomes. Match of CpGs to chromosomes is taken from Illumina website. However, it is a part of the package and is not dynamically updated. Therefore, if you wish to provide your own match, specify "user" in the type argument and provide a data frame with in the annotation argument; 
+* Specify the type of data as "user-provided". Type of data (450k or EPIC) is used to split CpGs across chromosomes. Match of CpGs to chromosomes is taken from Illumina website. However, it is a part of the package and is not dynamically updated. Therefore, if you wish to provide your own match, specify "user" in the type argument and provide a data frame with in the annotation argument; 
 
-* choose the number of cores: *methyLImp* first splits the data by chromosomes and then does imputation in parallel. By default the number of cores will be one less than total number of your physical cores, but you can decrease it. Here we use 2 since for the purpose of the vignette our dataset is small but we encourage you to increase this number; 
+* Choose the number of cores. *methyLImp2* first splits the data by chromosomes and then does imputation in parallel. By default the number of cores will be one less than total number of your physical cores, but you can decrease it. Here we use 2 since for the purpose of the vignette our dataset is small but we encourage you to increase this number; 
 
-* set up mini-batch computation: if your dataset is quite big sample-wise, you can opt to use only a fraction of samples for the imputation to decrease the running time, say 10, 20, 50% (depending on the original number of samples). Subsample will be chosen randomly for each calculation. The bigger the subsample - the better is the performance, hence by default it is 1. An option to improve the performance but still keep the running time low is to repeat computation for a (randomly chosen) fraction of samples several times, maybe 2, 3, 5. In the paper we explore how these two tuning parameters influence the running time and the performance.
+* Set up mini-batch computation. If your dataset is quite big sample-wise, you can opt to use only a fraction of samples for the imputation to decrease the running time, say 10, 20, 50% (depending on the original number of samples). Subsample will be chosen randomly for each calculation. The bigger the subsample - the better is the performance, hence by default it is 1. An option to improve the performance but still keep the running time low is to repeat computation for a (randomly chosen) fraction of samples several times, maybe 2, 3, 5. In the paper we explore how these two tuning parameters influence the running time and the performance.
 
 The output matrix here is the original one with imputed values instead of NAs.
 
@@ -76,7 +109,8 @@ performance <- evaluatePerformance(beta, t(assays(beta_SE_imputed)[[1]]), na_pos
 print(performance)
 ```
 
-## Session info
+
+# Session info
 
 ```{r sessionInfo}
 sessionInfo()

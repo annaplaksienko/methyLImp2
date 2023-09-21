@@ -8,7 +8,7 @@
 #' @param max a number, maximum value for bounded-range variables. 
 #' Default is 1 (we assume beta-value representation of the methylation data). 
 #' Can be user provided in case of other types of data.
-#' @param col.list a numeric vector of ids of the columns with NAs for which 
+#' @param skip_imputation_ids a numeric vector of ids of the columns with NAs for which 
 #' \emph{not} to perform the imputation. If \code{NULL}, all columns are considered.
 #' @param minibatch_frac a number, what percentage of samples to use for 
 #' mini-batch computation. The default is 1 (i.e., 100\% of samples are used, 
@@ -17,26 +17,23 @@
 #' fraction of samples (more times - better performance). 
 #' The default is 1 (as a companion to default fraction of 100\%. i.e. no mini-batch).
 #'
-#' @importFrom dplyr distinct
-#'
 #' @return A numeric matrix \eqn{out} with imputed data is returned.
 #' 
 #' @keywords internal
 
 methyLImp2_internal <- function(dat,
                                min, max,
-                               col.list,
-                               minibatch_frac, minibatch_reps,
-                               max.sv = NULL) {
+                               skip_imputation_ids,
+                               minibatch_frac, minibatch_reps) {
 
-  #let's identify columns with same patterns of NAs
+    #let's identify columns with same patterns of NAs
     {
         colnames_dat <- colnames(dat)
         
         #detect NAs
         dat_na <- is.na(dat)
         #exclude columns with no NAs
-        dat_na <- dat_na[, colSums(dat_na) > 0]
+        dat_na <- dat_na[, colSums(dat_na) > 0, drop = FALSE]
         if (dim(dat_na)[2] == 0) {
           return("No columns with missing values detected.")
         }
@@ -44,30 +41,31 @@ methyLImp2_internal <- function(dat,
         all_NA_cols <- which(colnames_dat %in% colnames(dat_na))
         # exclude from the imputation columns with all NAs or 
         # a single not NA value: not enough information for imputation
-        dat_na <- dat_na[, colSums(dat_na) < (dim(dat_na)[1] - 1)]
+        dat_na <- dat_na[, colSums(dat_na) < (dim(dat_na)[1] - 1), drop = FALSE]
     
         #If all the columns have missing values we cannot do anything
         if (dim(dat_na)[2] == dim(dat)[2]) {
           return("Not enough data without missing values to conduct imputation.")
-        } else {
-          message("#columns with #NAs < (#samples - 1): ", dim(dat_na)[2])
-        }
+        } 
+        #else {
+        #  message("#columns with #NAs < (#samples - 1): ", dim(dat_na)[2])
+        #}
         
-        unique_patterns <- as.matrix(distinct(as.data.frame(t(dat_na))))
-        ngroups <- dim(unique_patterns)[1]
-        message("#regression groups: ", ngroups)
+        unique_patterns <- unique(t(dat_na))
+        npatterns <- dim(unique_patterns)[1]
+        #message("#regression groups: ", npatterns)
     
-        ids <- vector(mode = "list", length = ngroups)
+        ids <- vector(mode = "list", length = npatterns)
 
-        for (i in seq_len(ngroups)) {
+        for (i in seq_len(npatterns)) {
           curr_pattern <- unique_patterns[i, ]
     
           col_match <- apply(dat_na, 2, function(x) identical(x, curr_pattern))
           col_match <- colnames(dat_na)[col_match]
           NAcols_id <- which(colnames_dat %in% col_match)
           #if some of the chosen columns are restricted by user, exclude them
-          if(!is.null(col.list)) {
-              NAcols_id <- NAcols_id[!(NAcols_id %in% col.list)]
+          if(!is.null(skip_imputation_ids)) {
+              NAcols_id <- NAcols_id[!(NAcols_id %in% skip_imputation_ids)]
           }
           
           row_id <- which(curr_pattern == TRUE)
@@ -75,14 +73,14 @@ methyLImp2_internal <- function(dat,
           ids[[i]] <- list(row_id = row_id, NAcols_id = NAcols_id)
         }
 
-        names(ids) <- paste("group", seq_len(ngroups), sep = "_")
+        names(ids) <- paste("group", seq_len(npatterns), sep = "_")
 
   }
 
     out <- dat
-    for (i in seq_len(ngroups)) {
-        row_id <- ids[[i]]$row_id
-        NAcols_id <- ids[[i]]$NAcols_id
+    for (j in seq_len(npatterns)) {
+        row_id <- ids[[j]]$row_id
+        NAcols_id <- ids[[j]]$NAcols_id
 
         C <- dat[row_id, -all_NA_cols]
     
@@ -105,6 +103,7 @@ methyLImp2_internal <- function(dat,
           }
 
       # Updates or computes max.sv from A. Negative or zero value not allowed
+          max.sv <- NULL
           max.sv <- max(ifelse(is.null(max.sv), min(dim(A)), max.sv), 1)
         
           if(is.null(min) || is.null(max)) {
@@ -123,7 +122,6 @@ methyLImp2_internal <- function(dat,
         }
 
         imputed <- Reduce('+', imputed_list) / minibatch_reps
-        #test2[[i]] <- imputed
         out[row_id, NAcols_id] <- imputed
   }
 

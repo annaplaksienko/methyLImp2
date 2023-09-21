@@ -4,10 +4,10 @@
 \alias{inv.plogit}
 \title{Inverse of the pseudo-logit function.}
 \usage{
-inv.plogit(x, min = 0, max = 1)
+inv.plogit(X, min = 0, max = 1)
 }
 \arguments{
-\item{x}{a numeric matrix}
+\item{X}{a numeric matrix}
 
 \item{min}{a number, default value is 0}
 

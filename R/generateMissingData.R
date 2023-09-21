@@ -1,4 +1,4 @@
-#' Generation of artifical missing values
+#' Generation of artificial missing values
 #'
 #' This function generates missing values for the simulation purposes 
 #' (to apply \emph{methyLImp} method and then compare the imputed values with 
@@ -16,15 +16,13 @@
 #' 
 #' @importFrom stats rpois
 #' 
-#' @return A numeric data matrix with generated NAs in some entries and 
-#' positions of those NAs.
+#' @return A list with two slots: a numeric data matrix with generated NAs in 
+#' some entries and a list of positions of those NAs.
 #'
 #' @export
 #' @examples
-#' {
 #' data(beta)
 #' beta_with_nas <- generateMissingData(beta, lambda = 3.5)
-#' }
 
 
 generateMissingData <- function(beta, lambda = NULL) {
@@ -43,11 +41,6 @@ generateMissingData <- function(beta, lambda = NULL) {
     #which probes will have NAs?
     na_cols <- sample(seq_len(nprobes), size = nna)
   
-    #make a list where each element corresponds to a probe and 
-    #it will store which samples are NA for that probe
-    na_values <- vector(mode = "list", length = nna)
-    names(na_values) <- na_cols
-  
     #we assume that number of NAs in the chosen probes follows Poisson distrubution.
     #if lambda is not provided by the user, we choose it by 
     #lambda = 0.15 * #samples - 0.2.
@@ -63,6 +56,11 @@ generateMissingData <- function(beta, lambda = NULL) {
     }
   
     beta_with_nas <- beta
+    
+    #make a list where each element corresponds to a probe and 
+    #it will store which samples are NA for that probe
+    na_values <- vector(mode = "list", length = nna)
+    names(na_values) <- na_cols
   
     for (i in seq_len(nna)) {
         #save column id

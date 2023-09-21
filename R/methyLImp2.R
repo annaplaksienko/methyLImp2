@@ -6,8 +6,9 @@
 #' parallelised over chromosomes to improve the running time.
 #'
 #' @param input either a numeric data matrix with missing values, 
-#' with samples in rows and variables (probes) in columns, or a 
-#' SummarizedExperiment object, from which the first assays slot will be imputed.
+#' with samples in rows and variables (probes) in named columns, or a 
+#' SummarizedExperiment object, from which the first assays slot (with 
+#' variables in rows and samples in columns, as standard) will be imputed.
 #' @param type a type of data, 450K or EPIC. Type is used to split CpGs across 
 #' chromosomes. Match of CpGs to chromosomes is taken from Illumina website. 
 #' However, it is a part of the package and is not dynamically 
@@ -24,10 +25,10 @@
 #' they can change the range in this argument.
 #' @param groups a vector of the same length as the number of samples that 
 #' identifies what groups does each sample correspond. Unique elements of the 
-#' vector will be indentified as groups and data will be split according to 
+#' vector will be identified as groups and data will be split according to 
 #' them. Imputation will be done for each group separately. The default is NULL, 
 #' so all is considered as one group. 
-#' @param col.list a numeric vector of ids of the columns with NAs for which 
+#' @param skip_imputation_ids a numeric vector of ids of the columns with NAs for which 
 #' \emph{not} to perform the imputation. If \code{NULL}, all columns are considered.
 #' @param ncores number of cores to use in parallel computation. 
 #' If \code{NULL}, set to \eqn{\#physical cores - 1}.
@@ -41,30 +42,28 @@
 #' a fraction of samples (more times -> better performance). The default is 1 
 #' (as a companion to default fraction of 100\%. i.e. no mini-batch).
 #'
-#' @importFrom parallel detectCores makeCluster clusterEvalQ clusterExport clusterApply stopCluster
-#' @importFrom dplyr distinct
+#' @importFrom BiocParallel SnowParam bplapply bpstart bpstop
+#' @importFrom parallel detectCores
 #' @importFrom SummarizedExperiment assays
 #' @importFrom methods is
 #'
-#' @return Either a numeric matrix \eqn{out} with imputed data or a 
-#' SummarizedExperiment object where the assay slot is replaced with imputed data. 
+#' @return Either a numeric matrix with imputed data or a SummarizedExperiment 
+#' object where the assay slot is replaced (!) with imputed data. 
 #'
 #' @export
 #' 
 #' @examples
-#' {
 #' data(beta)
 #' beta_with_nas <- generateMissingData(beta, lambda = 3.5)$beta_with_nas
 #' beta_imputed <- methyLImp2(input = beta_with_nas, type = "EPIC", 
 #'                           minibatch_frac = 0.5, ncores = 1)
-#' }
 
 methyLImp2 <- function(input,
                       type = c("450K", "EPIC", "user"),
                       annotation = NULL,
                       range = NULL,
                       groups = NULL,
-                      col.list = NULL,
+                      skip_imputation_ids = NULL,
                       ncores = NULL,
                       minibatch_frac = 1, minibatch_reps = 1) {
   
@@ -106,7 +105,7 @@ methyLImp2 <- function(input,
             stop("Range must be a vector of two numbers.")
         } else {
             if (range[1] >= range[2]) {
-                stop("Left interval must be less than the right one.")
+                stop("Left entry of the interval must be less than the right one.")
             } else {
                 min <- range[1]
                 max <- range[2]
@@ -159,11 +158,24 @@ methyLImp2 <- function(input,
         if (is.null(ncores)) {
             ncores <- detectCores(logical = FALSE) - 1
         }
-        cl <- makeCluster(ncores)
-        res <- parallel::clusterApplyLB(cl, data_chr, methyLImp2_internal,
-                                        min, max, col.list,
-                                        minibatch_frac, minibatch_reps)
-        stopCluster(cl)
+        
+        #cl <- makeCluster(ncores)
+        #res <- parallel::clusterApplyLB(cl, data_chr, methyLImp2_internal,
+        #                                min, max, skip_imputation_ids,
+        #                                minibatch_frac, minibatch_reps)
+        #stopCluster(cl)
+        
+        parallel_param <- SnowParam(workers = ncores, type = "SOCK",
+                                    tasks = nchr,
+                                    exportglobals = FALSE, 
+                                    exportvariables = FALSE)
+        bpstart(parallel_param)
+        res <- bplapply(data_chr, methyLImp2_internal, 
+                         min, max, skip_imputation_ids,
+                         minibatch_frac, minibatch_reps,
+                         BPPARAM = parallel_param)
+        bpstop(parallel_param)
+        
         names(res) <- names(data_chr)
         
         #if some chromosomes didn't have NAs or didn't have enough data for imputation,
