@@ -138,9 +138,16 @@ methyLImp2 <- function(input,
         nchr <- length(chromosomes)
         data_chr <- vector(mode = "list", length = nchr)
         names(data_chr) <- chromosomes
+        probes <- colnames(data)
         for (c in seq_len(nchr)) {
             curr_cpgs <- anno[anno$chr == chromosomes[c], ]$cpg
             data_chr[[c]] <- data[, colnames(data) %in% curr_cpgs]
+            probes <- probes[! probes %in% curr_cpgs]
+            print(length(probes))
+        }
+        if (length(probes) != 0) {
+            #answer <- readline("Some probes are not present in our annotation")
+            warning("Some probes are not present in oput annotation. They will not be imputed or used for imputation. Consider using a custom annotation.")
         }
         #drop chromosomes that were not present in the the input dataset 
         #(if such exist)
@@ -158,17 +165,14 @@ methyLImp2 <- function(input,
         if (is.null(ncores)) {
             ncores <- detectCores(logical = FALSE) - 1
         }
-        
-        #cl <- makeCluster(ncores)
-        #res <- parallel::clusterApplyLB(cl, data_chr, methyLImp2_internal,
-        #                                min, max, skip_imputation_ids,
-        #                                minibatch_frac, minibatch_reps)
-        #stopCluster(cl)
-        
+
+        #we set seed inside the parameters so that random sampling for mini-batch
+        #is reproducible
         parallel_param <- SnowParam(workers = ncores, type = "SOCK",
                                     tasks = nchr,
                                     exportglobals = FALSE, 
-                                    exportvariables = FALSE)
+                                    exportvariables = FALSE,
+                                    RNGseed = 1994)
         bpstart(parallel_param)
         res <- bplapply(data_chr, methyLImp2_internal, 
                          min, max, skip_imputation_ids,
