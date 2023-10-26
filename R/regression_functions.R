@@ -48,6 +48,8 @@ inv.plogit <- function(X, min = 0, max = 1)
 #'
 #' @param X a numeric matrix
 #' @param tol a number
+#' 
+#' @importFrom corpcor fast.svd
 #'
 #' @return A numeric matrix 
 #'
@@ -60,7 +62,7 @@ pinvr <- function(X, max.sv = min(dim(X)), tol = sqrt(.Machine$double.eps))
     if(length(dim(X)) > 2L || !(is.numeric(X) || is.complex(X)))
         stop("'X' must be a numeric or complex matrix")
     if(!is.matrix(X)) X <- as.matrix(X)
-    Xsvd <- svd(X)
+    Xsvd <- fast.svd(X)
     if(is.complex(X)) Xsvd$u <- Conj(Xsvd$u)
     Positive <- Xsvd$d > max(tol * Xsvd$d[1L], 0)
 
