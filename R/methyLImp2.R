@@ -143,7 +143,6 @@ methyLImp2 <- function(input,
             curr_cpgs <- anno[anno$chr == chromosomes[c], ]$cpg
             data_chr[[c]] <- data[, colnames(data) %in% curr_cpgs]
             probes <- probes[! probes %in% curr_cpgs]
-            print(length(probes))
         }
         if (length(probes) != 0) {
             #answer <- readline("Some probes are not present in our annotation")
