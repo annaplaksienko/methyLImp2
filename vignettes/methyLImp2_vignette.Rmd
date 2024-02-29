@@ -5,7 +5,7 @@ package: methyLImp2
 output: 
     BiocStyle::html_document
 vignette: >
-    %\VignetteIndexEntry{Vignette Title}
+    %\VignetteIndexEntry{methyLImp2 vignette}
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}  
 ---
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, message = FALSE}
 library(methyLImp2)
 library(SummarizedExperiment)
 ```
@@ -25,9 +25,9 @@ library(SummarizedExperiment)
 
 DNA methylation profiles often contain multiple missing values due to some technological problems. Meanwhile, methods for downstream analysis of such data require you to perform imputation of those missing values first. Although several imputation methods exist, most are inefficient with large dimensions and are not specific to methylation datasets. Previously, we have introduced *methyLImp* - imputation method that exploits inter-sample correlation in the methylation data in its model and also does imputation simultaneously for all CpGs with the same missingness pattern (i.e. NAs in the same samples). Although it demonstrated great performance in comparison with other methods (see [here](https://pubmed.ncbi.nlm.nih.gov/30796811/)), there was still a room for improvement in terms of the running time. Therefore, we upgraded it to *methyLImp2*!
 
-This version is parallelized over chromosomes and, optionally, in case of large sample size, can use mini-batch approach. In our simulation study this two improvements allowed to reduce running time from more than a day to just half an hour for the EPIC dataset of 456 samples!
+This version is parallelized over chromosomes and, optionally, in case of large sample size, can use mini-batch approach. In our simulation study these two improvements allowed to reduce the running time from more than a day to just half an hour for the EPIC dataset of 456 samples!
 
-In this vignette we will demonstrate the usage of the *methyLImp2* for the imputation of the missing values in the methylation dataset. 
+In this vignette we will demonstrate the usage of the *methyLImp2* package for the imputation of the missing values in the methylation dataset. More details about the method itself can be found in [the manuscript](https://academic.oup.com/bioinformatics/article/40/1/btae001/7517106). If you use our package in your research and wish to support us, kindly cite the paper (see `citation(package = "methyLImp2")`).
 
 ## Installation
 To install *methyLImp2* from Bioconductor, run
@@ -47,12 +47,12 @@ In this section we demonstrate the usage of the *methyLImp2* method. This sectio
 
 Typically, imputation of the missing values is done before any other steps, like normalization, data exploration, analysis etc. Note that some packages do imputation while loading .idat files into R, so then you should set that step accordingly, to be able to use *methyLImp* after loading the data.
 
-Here we use a subset of GSE199057 Gene Expression Omnibus dataset with mucosa samples from non-colon-cancer patients.  Methylation data were measured on EPIC arrays. For the sake of vignette, we reduce the number of samples from 68 to randomly sampled 24. We also restrict the dataset to the two shortest chromosomes, 18 and 21, and filtered out SNPs, so the total number of probes is 24 273. We refer the reader to our [simulation studies](https://github.com/annaplaksienko/methyLImp2_simulation_studies) for full size dataset performance and running time results. 
+Here we use a subset of GSE199057 Gene Expression Omnibus dataset with mucosa samples from non-colon-cancer patients.  Methylation data were measured on EPIC arrays. For the sake of vignette and due to package size restrictions, we reduce the number of samples from 68 to randomly sampled 24. We also restricted the dataset to the two shortest chromosomes, 18 and 21, using only a quarter of probes from each, and filtered out SNPs, so the total number of probes is 6064. We refer the reader to our [simulation studies](https://github.com/annaplaksienko/methyLImp2_simulation_studies) for full size dataset performance and running time results. 
 
 This dataset is a numeric matrix. You can use it as an input for *methyLImp2*. Data should be in a "tidy" format, i.e. with samples in rows and variables (probes, CpGs) in columns. However, if you use another possible input format, SummarizedExperiment, dimensions should be reversed (see later).
 
 ```{r load the dataset}
-data(beta)
+data(beta, package = "methyLImp2")
 print(dim(beta))
 ```
 
@@ -82,7 +82,7 @@ Now, let's run *methyLImp2*! You start by providing either a numeric data matrix
 
 * Specify what groups you have in your data. *methyLImp2* works best when imputation is done on each group of samples independently. Therefore, you should specify the correspondence of samples to groups. *methyLImp2* will split the data by groups, perform imputation and put the data back together. Here we've already pre-filtered the data to only one group, so we do not use this argument;
 
-* Specify the type of data as "user-provided". Type of data (450k or EPIC) is used to split CpGs across chromosomes. Match of CpGs to chromosomes is taken from Illumina website. However, it is a part of the package and is not dynamically updated. Therefore, if you wish to provide your own match, specify "user" in the type argument and provide a data frame with in the annotation argument; 
+* Specify the type of data as "user-provided". Type of data (450k or EPIC) is used to split CpGs across chromosomes. Match of CpGs to chromosomes is taken from ChAMPdata package (there, in turn, it is from Illumina website). Therefore, if you wish to provide your own match, specify "user" in the type argument and provide a data frame with in the annotation argument; 
 
 * Choose the number of cores. *methyLImp2* first splits the data by chromosomes and then does imputation in parallel. By default the number of cores will be one less than total number of your physical cores, but you can decrease it. Here we use 2 since for the purpose of the vignette our dataset is small but we encourage you to increase this number; 
 
@@ -93,7 +93,7 @@ The output matrix here is the original one with imputed values instead of NAs.
 Note that running time should take around 2 to 3 minutes depending on your machine.
 
 ```{r run methyLImp}
-time <- system.time(beta_SE_imputed <- methyLImp2(beta_SE, 
+time <- system.time(beta_SE_imputed <- methyLImp2(input = beta_SE, 
                                                type = "EPIC", 
                                                ncores = 2,
                                                minibatch_frac = 0.5))
@@ -102,7 +102,7 @@ print(paste0("Runtime was ", round(time[3], digits = 2), " seconds."))
 
 ## Performance evaluation
 
-Now we evaluate the performance of the algorithm with root mean square error (RMSE) and mean absolute error (MAE): the lower the values are, the better.
+Now we evaluate the performance of the algorithm with root mean square error (RMSE), mean absolute error (MAE), mean absolute percentage error (MAPE) - the lower the values are, the better - and Pearson correlation coefficient (PCC) - closer to 1, the better.
 
 ```{r evaluate performance}
 performance <- evaluatePerformance(beta, t(assays(beta_SE_imputed)[[1]]), na_positions)

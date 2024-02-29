@@ -23,9 +23,8 @@ SummarizedExperiment object, from which the first assays slot (with
 variables in rows and samples in columns, as standard) will be imputed.}
 
 \item{type}{a type of data, 450K or EPIC. Type is used to split CpGs across 
-chromosomes. Match of CpGs to chromosomes is taken from Illumina website. 
-However, it is a part of the package and is not dynamically 
-updated. Therefore, if you wish to provide your own match, specify "user" in 
+chromosomes. Match of CpGs to chromosomes is taken from ChAMPdata package. 
+If you wish to provide your own match, specify "user" in 
 this argument and provide a data frame in the next argument.}
 
 \item{annotation}{a data frame, user provided match between CpG sites and 
@@ -40,27 +39,32 @@ However, if a user wishes to apply the method to other kind of data,
 they can change the range in this argument.}
 
 \item{groups}{a vector of the same length as the number of samples that 
-identifies what groups does each sample correspond. Unique elements of the 
-vector will be identified as groups and data will be split according to 
-them. Imputation will be done for each group separately. The default is NULL, 
-so all is considered as one group.}
+identifies what groups does each sample correspond, e.g. \code{c(1, 1, 2, 3)}
+or \code{c("group1", "group1", "group2", "group3")}. Unique elements of the 
+vector will be identified as groups and data will be split accordingly. 
+Imputation will be done for each group separately consecutively. 
+The default is NULL, so all samples are considered as one group.}
 
-\item{skip_imputation_ids}{a numeric vector of ids of the columns with NAs for which 
-\emph{not} to perform the imputation. If \code{NULL}, all columns are considered.}
+\item{skip_imputation_ids}{a numeric vector of ids of the columns with NAs
+for which \emph{not} to perform the imputation. If \code{NULL}, all columns 
+are considered.}
 
 \item{ncores}{number of cores to use in parallel computation. 
 If \code{NULL}, set to \eqn{\#physical cores - 1}.}
 
-\item{minibatch_frac}{a number, what percentage of samples to use for 
-mini-batch computation. The default is 1 (i.e., 100\% of samples are used, 
-no mini-batch). Remember that if your data has several groups, mini-batch 
-will be applied to each group separately but with the same \%, 
-so choose it accordingly. However, if your chosen \% will be smaller than 
-matrix dimension for some groups, mini-batch will be just ignored.}
+\item{minibatch_frac}{a number between 0 and 1, what fraction of samples 
+to use for mini-batch computation. Remember that if your data has several groups, 
+mini-batch will be applied to each group separately but with the same fraction, 
+so choose it accordingly. However, if your chosen fraction will be smaller 
+than a matrix dimension for some groups, mini-batch will be just ignored. 
+We advise to use mini-batch only if you have large number of samples, 
+order of hundreds. The default is 1 (i.e., 100\% of samples are used, 
+no mini-batch).}
 
-\item{minibatch_reps}{a number, how many times repeat computations with 
-a fraction of samples (more times -> better performance). The default is 1 
-(as a companion to default fraction of 100\%. i.e. no mini-batch).}
+\item{minibatch_reps}{a number, how many times to repeat computations with 
+a fraction of samples specified above (more times -> better performance but 
+more runtime). The default is 1 (as a companion to default fraction of 100\%,
+i.e. no mini-batch).}
 }
 \value{
 Either a numeric matrix with imputed data or a SummarizedExperiment 

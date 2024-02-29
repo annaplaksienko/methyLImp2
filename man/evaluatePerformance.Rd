@@ -2,7 +2,9 @@
 % Please edit documentation in R/evaluatePerformance.R
 \name{evaluatePerformance}
 \alias{evaluatePerformance}
-\title{Evaluate root mean square error (RMSE) and mean absolute error (MAE)}
+\title{Evaluate performance metrics: root mean square error (RMSE), 
+mean absolute error (MAE), mean absolute percentage error (MAPE) and
+Pearson correlation coefficient (PCC).}
 \usage{
 evaluatePerformance(beta_true, beta_imputed, na_positions)
 }
@@ -19,14 +21,19 @@ performance of the method on them since we do not know real value.
 Therefore, we need to know the positions of artificial NAs.}
 }
 \value{
-A numerical vector of two numbers, root mean square error 
-and mean absolute error.
+A numerical vector of four numbers: root mean square error (RMSE), 
+mean absolute error (MAE), mean absolute percentage error (MAPE) and
+Pearson correlation coefficient (PCC).
 }
 \description{
-This function computes root mean square error and mean absolute error as 
-an element-wise difference between two matrices (apart from NA elements): 
-\eqn{RMSE = \sqrt{\sum_i (true_i - est_i)^2 / \#NAs)}}, 
-\eqn{MAE = \sum_i |true_i - est_i| / \#NAs}.
+This function computes performance metrics as an element-wise difference 
+between two matrices (skipping NA elements that were not imputed): 
+* \eqn{RMSE = \sqrt{\sum_i (true_i - est_i)^2 / \#NAs)}};
+* \eqn{MAE = \sum_i |true_i - est_i| / \#NAs};
+* \eqn{MAPE = \dfrac{100}{n} \sum_i |true_i - est_i / true_i|} 
+(here we omit the true beta-values equal to 0 and their  predicted values
+to  avoid an indeterminate measure);
+* \eqn{PCC = \dfrac{\sum_i (true_i - \bar{true_i}) \sum_i(est_i - \bar{est}_i)}{\sqrt{\sum_i (true_i - \bar{true}_i)^2}} \sqrt{\sum_i(est_i - \bar{est_i})^2}}.
 }
 \examples{
 data(beta)

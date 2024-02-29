@@ -1,6 +1,6 @@
 Package: methyLImp2
 Title: Missing value estimation of DNA methylation data
-Version: 0.99.3
+Version: 0.99.4
 Authors@R: c(
     person("Pietro", "Di Lena", 
     role = c("aut"),
@@ -8,15 +8,21 @@ Authors@R: c(
     person("Anna", "Plaksienko", 
     email = "anna@plaxienko.com", 
     role = c("aut", "cre"),
-    comment = c(ORCID = "0000-0001-9607-057X")))       
+    comment = c(ORCID = "0000-0001-9607-057X")),
+    person("Claudia", "Angelini", 
+    role = c("aut"),
+    comment = c(ORCID = "0000-0001-8350-8464")),
+    person("Christine", "Nardini", 
+    role = c("aut"),
+    comment = c(ORCID = "0000-0001-7601-321X")))  
 Description: This package allows to estimate missing values in DNA methylation data. methyLImp method is based on linear regression since methylation levels show a high degree of inter-sample correlation. Implementation is parallelised over chromosomes since probes on different chromosomes are usually independent. Mini-batch approach to reduce the runtime in case of large number of samples is available.
-Imports: BiocParallel, parallel, stats, methods, corpcor, SummarizedExperiment
-Depends: R (>= 4.3)
+Imports: BiocParallel, parallel, stats, methods, corpcor, SummarizedExperiment, utils
+Depends: R (>= 4.3.0), ChAMPdata
 URL: https://github.com/annaplaksienko/methyLImp2 
 BugReports: https://github.com/annaplaksienko/methyLImp2/issues 
 License: GPL-2
 Encoding: UTF-8
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 biocViews: DNAMethylation, Microarray, Software, MethylationArray, Regression
 Suggests: 
     BiocStyle,
@@ -27,4 +33,3 @@ Suggests:
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Language: en-US
-LazyData: true

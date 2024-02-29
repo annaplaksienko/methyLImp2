@@ -1,1 +1,1 @@
-globalVariables(c("annoEPIC", "anno450K"))
+globalVariables(c("hm450.manifest.hg19", "EPIC.manifest.hg19"))

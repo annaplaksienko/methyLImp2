@@ -20,6 +20,7 @@
 #' some entries and a list of positions of those NAs.
 #'
 #' @export
+#' 
 #' @examples
 #' data(beta)
 #' beta_with_nas <- generateMissingData(beta, lambda = 3.5)

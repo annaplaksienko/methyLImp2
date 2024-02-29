@@ -23,7 +23,7 @@ Methylation data were measured on EPIC arrays and after removal of
 sex chromosomes and SNPs loci, it contains 816 126 probes. 
 Pre-processing can be found on the _methyLImp2_ simulation github page 
 https://github.com/annaplaksienko/methyLImp2_simulation_studies.
-Here we subset only probes from two chromosomes (18 and 21) 
-to reduce the size for the sake of demonstration.
+Here we subset only a quarter of probes from two smallest chromosomes (18 and 21) 
+for the sake of demonstration.
 }
 \keyword{datasets}
