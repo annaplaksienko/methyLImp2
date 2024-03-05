@@ -77,10 +77,12 @@ split_by_chromosomes <- function(data,
 #' show a high degree of inter-sample correlation. Implementation is 
 #' parallelised over chromosomes to improve the running time.
 #'
-#' @param input either a numeric data matrix with missing values, 
-#' with samples in rows and variables (probes) in named columns, or a 
-#' SummarizedExperiment object, from which the first assays slot (with 
-#' variables in rows and samples in columns, as standard) will be imputed.
+#' @param input either a numeric data matrix with missing values to be, 
+#' with named samples in rows and variables (probes) in named columns, or a 
+#' SummarizedExperiment object, with an assay with variables in rows 
+#' and samples in columns, as standard.
+#' @param which_assay a character specifying which assay of the 
+#' SummarizedExperiment object to impute.
 #' @param type a type of data, 450K or EPIC. Type is used to split CpGs across 
 #' chromosomes. Match of CpGs to chromosomes is taken from ChAMPdata package. 
 #' If you wish to provide your own match, specify "user" in 
@@ -92,7 +94,7 @@ split_by_chromosomes <- function(data,
 #' specifying the range of values in the data. 
 #' Since we assume the beta-value representation of the methylation data, 
 #' the default range is \eqn{[0, 1]}. 
-#' However, if a user wishes to apply the method to other kind of data, 
+#' However, if a user wishes to apply the method to the other kind of data, 
 #' they can change the range in this argument.
 #' @param groups a vector of the same length as the number of samples that 
 #' identifies what groups does each sample correspond, e.g. \code{c(1, 1, 2, 3)}
@@ -103,8 +105,11 @@ split_by_chromosomes <- function(data,
 #' @param skip_imputation_ids a numeric vector of ids of the columns with NAs  
 #' for which \emph{not} to perform the imputation. If \code{NULL}, all columns 
 #' are considered.
-#' @param ncores number of cores to use in parallel computation. 
-#' If \code{NULL}, set to \eqn{\#physical cores - 1}.
+#' @param BPPARAM set of options for parallelization through BiocParallel package.
+#' For details we refer to their documentation. The one thing most users probably
+#' wish to customize is the number of cores. By default it is set to 
+#' \eqn{\#physical cores - 1}. If you wish to change is, supply
+#' \code{BBPARAM = SnowParam(workers = ncores)} with your desired \code{ncores}.
 #' @param minibatch_frac a number between 0 and 1, what fraction of samples 
 #' to use for mini-batch computation. Remember that if your data has several groups, 
 #' mini-batch will be applied to each group separately but with the same fraction, 
@@ -117,14 +122,17 @@ split_by_chromosomes <- function(data,
 #' a fraction of samples specified above (more times -> better performance but 
 #' more runtime). The default is 1 (as a companion to default fraction of 100\%,
 #' i.e. no mini-batch).
+#' @param overwrite_res a boolean specifying whether to overwrite a first assays 
+#' slot in an input SummarizedExperiment object or to add another slot with 
+#' imputed data. The default is \code{TRUE} to reduced the object size.
 #'
 #' @importFrom BiocParallel SnowParam bplapply bpstart bpstop
 #' @importFrom parallel detectCores
-#' @importFrom SummarizedExperiment assays
+#' @importFrom SummarizedExperiment assays assay assayNames
 #' @importFrom methods is
 #'
 #' @return Either a numeric matrix with imputed data or a SummarizedExperiment 
-#' object where the assay slot is replaced (!) with imputed data. 
+#' object.
 #'
 #' @export
 #' 
@@ -132,16 +140,18 @@ split_by_chromosomes <- function(data,
 #' data(beta)
 #' beta_with_nas <- generateMissingData(beta, lambda = 3.5)$beta_with_nas
 #' beta_imputed <- methyLImp2(input = beta_with_nas, type = "EPIC", 
-#'                           minibatch_frac = 0.5, ncores = 1)
+#'                           minibatch_frac = 0.5, 
+#'                           BPPARAM = BiocParallel::SnowParam(workers = 1))
 
-methyLImp2 <- function(input,
+methyLImp2 <- function(input, which_assay = NULL,
                       type = c("450K", "EPIC", "user"),
                       annotation = NULL,
                       range = NULL,
                       groups = NULL,
                       skip_imputation_ids = NULL,
-                      ncores = NULL,
-                      minibatch_frac = 1, minibatch_reps = 1) {
+                      BPPARAM = NULL,
+                      minibatch_frac = 1, minibatch_reps = 1,
+                      overwrite_res = TRUE) {
   
     #check the class of input
     if (is.matrix(input)) {
@@ -158,10 +168,18 @@ methyLImp2 <- function(input,
             stop("The input matrix is not numeric.") 
         }
     } else if (is(input, "SummarizedExperiment")) {
-        data_full <- t(assays(input)[[1]])
+        if (is.null(which_assay)) {
+            data_full <- t(assay(input))
+        } else {
+            if (which_assay %in% assayNames(input)) {
+                data_full <- t(assay(input, which_assay))
+            } else {
+                stop("Please provide correct which_assay name.")
+            }
+        }
         flag <- "SE"
     } else {
-        stop("Input is not a matrix or a SummarizedExperiment object.")
+        stop("Input is not a numeric matrix or a SummarizedExperiment object.")
     }
     
     #check annotation
@@ -220,18 +238,26 @@ methyLImp2 <- function(input,
         nchr <- length(data_chr)
         
         #run methyLImp in parallel for each chromosome
-        if (is.null(ncores)) {
+        if (is.null(BPPARAM)) {
             ncores <- min(nchr,
                           detectCores(logical = FALSE) - 1)
+            #we set seed inside the parameters so that random sampling for mini-batch
+            #is reproducible
+            parallel_param <- SnowParam(workers = ncores, type = "SOCK",
+                                        tasks = nchr,
+                                        exportglobals = FALSE, 
+                                        exportvariables = FALSE,
+                                        RNGseed = 1994)
+        } else if (attr(class(BPPARAM), "package") == "BiocParallel") {
+            parallel_param <- BPPARAM
+            parallel_param$tasks <- nchr
+            parallel_param$exportglobals <- FALSE
+            parallel_param$exportvariables <- FALSE
+            parallel_param$RNGseed <- 1994
+        } else {
+            stop("Please provide correct BPPARAM argument.")
         }
 
-        #we set seed inside the parameters so that random sampling for mini-batch
-        #is reproducible
-        parallel_param <- SnowParam(workers = ncores, type = "SOCK",
-                                    tasks = nchr,
-                                    exportglobals = FALSE, 
-                                    exportvariables = FALSE,
-                                    RNGseed = 1994)
         bpstart(parallel_param)
         res <- bplapply(data_chr, methyLImp2_internal, 
                          min, max, skip_imputation_ids,
@@ -270,8 +296,13 @@ methyLImp2 <- function(input,
     out_full <- out_full[samples_order, ]
     
     if (flag == "SE") {
-        assays(input)[[1]] <- t(out_full)
-        return(input)
+        if (overwrite_res) {
+            assays(input)[[1]] <- t(out_full)
+            return(input)
+        } else {
+            assay(input, "beta_imputed") <- t(out_full)
+            return(input)
+        }
     } else {
         return(out_full)
     }

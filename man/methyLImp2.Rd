@@ -6,21 +6,26 @@
 \usage{
 methyLImp2(
   input,
+  which_assay = NULL,
   type = c("450K", "EPIC", "user"),
   annotation = NULL,
   range = NULL,
   groups = NULL,
   skip_imputation_ids = NULL,
-  ncores = NULL,
+  BPPARAM = NULL,
   minibatch_frac = 1,
-  minibatch_reps = 1
+  minibatch_reps = 1,
+  overwrite_res = TRUE
 )
 }
 \arguments{
-\item{input}{either a numeric data matrix with missing values, 
-with samples in rows and variables (probes) in named columns, or a 
-SummarizedExperiment object, from which the first assays slot (with 
-variables in rows and samples in columns, as standard) will be imputed.}
+\item{input}{either a numeric data matrix with missing values to be, 
+with named samples in rows and variables (probes) in named columns, or a 
+SummarizedExperiment object, with an assay with variables in rows 
+and samples in columns, as standard.}
+
+\item{which_assay}{a character specifying which assay of the 
+SummarizedExperiment object to impute.}
 
 \item{type}{a type of data, 450K or EPIC. Type is used to split CpGs across 
 chromosomes. Match of CpGs to chromosomes is taken from ChAMPdata package. 
@@ -35,7 +40,7 @@ previous argument to be able to provide user annotation.}
 specifying the range of values in the data. 
 Since we assume the beta-value representation of the methylation data, 
 the default range is \eqn{[0, 1]}. 
-However, if a user wishes to apply the method to other kind of data, 
+However, if a user wishes to apply the method to the other kind of data, 
 they can change the range in this argument.}
 
 \item{groups}{a vector of the same length as the number of samples that 
@@ -49,8 +54,11 @@ The default is NULL, so all samples are considered as one group.}
 for which \emph{not} to perform the imputation. If \code{NULL}, all columns 
 are considered.}
 
-\item{ncores}{number of cores to use in parallel computation. 
-If \code{NULL}, set to \eqn{\#physical cores - 1}.}
+\item{BPPARAM}{set of options for parallelization through BiocParallel package.
+For details we refer to their documentation. The one thing most users probably
+wish to customize is the number of cores. By default it is set to 
+\eqn{\#physical cores - 1}. If you wish to change is, supply
+\code{BBPARAM = SnowParam(workers = ncores)} with your desired \code{ncores}.}
 
 \item{minibatch_frac}{a number between 0 and 1, what fraction of samples 
 to use for mini-batch computation. Remember that if your data has several groups, 
@@ -65,10 +73,14 @@ no mini-batch).}
 a fraction of samples specified above (more times -> better performance but 
 more runtime). The default is 1 (as a companion to default fraction of 100\%,
 i.e. no mini-batch).}
+
+\item{overwrite_res}{a boolean specifying whether to overwrite a first assays 
+slot in an input SummarizedExperiment object or to add another slot with 
+imputed data. The default is \code{TRUE} to reduced the object size.}
 }
 \value{
 Either a numeric matrix with imputed data or a SummarizedExperiment 
-object where the assay slot is replaced (!) with imputed data.
+object.
 }
 \description{
 This function performs missing value imputation specific for DNA methylation 
@@ -80,5 +92,6 @@ parallelised over chromosomes to improve the running time.
 data(beta)
 beta_with_nas <- generateMissingData(beta, lambda = 3.5)$beta_with_nas
 beta_imputed <- methyLImp2(input = beta_with_nas, type = "EPIC", 
-                          minibatch_frac = 0.5, ncores = 1)
+                          minibatch_frac = 0.5, 
+                          BPPARAM = BiocParallel::SnowParam(workers = 1))
 }

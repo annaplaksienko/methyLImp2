@@ -1,3 +1,10 @@
+CHANGES IN VERSION 0.99.5 (Release date: 2024-03-05)
+------------------------
+
+    o Add "BPPARAM" argument for BiocParallel parallelization.
+    o Add "assay" and "overwrite" arguments for better manupulation of SummarizedExperiment object.
+    o Change license.
+
 CHANGES IN VERSION 0.99.4 (Release date: 2024-02-29)
 ------------------------
 

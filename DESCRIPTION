@@ -1,6 +1,6 @@
 Package: methyLImp2
 Title: Missing value estimation of DNA methylation data
-Version: 0.99.4
+Version: 0.99.5
 Authors@R: c(
     person("Pietro", "Di Lena", 
     role = c("aut"),
@@ -20,7 +20,7 @@ Imports: BiocParallel, parallel, stats, methods, corpcor, SummarizedExperiment, 
 Depends: R (>= 4.3.0), ChAMPdata
 URL: https://github.com/annaplaksienko/methyLImp2 
 BugReports: https://github.com/annaplaksienko/methyLImp2/issues 
-License: GPL-2
+License: GPL-3
 Encoding: UTF-8
 RoxygenNote: 7.3.1
 biocViews: DNAMethylation, Microarray, Software, MethylationArray, Regression
