@@ -124,8 +124,8 @@ split_by_chromosomes <- function(data,
 #' a fraction of samples specified above (more times -> better performance but 
 #' more runtime). The default is 1 (as a companion to default fraction of 100\%,
 #' i.e. no mini-batch).
-#' @param overwrite_res a boolean specifying whether to overwrite a \code{which_assay} 
-#' slot in an input SummarizedExperiment object or to add another slot with 
+#' @param overwrite_res a boolean specifying whether to overwrite an imputed slot
+#' of the SummarizedExperiment object or to add another slot with 
 #' imputed data. The default is \code{TRUE} to reduced the object size.
 #'
 #' @importFrom BiocParallel SnowParam bplapply bpstart bpstop
