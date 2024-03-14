@@ -12,7 +12,7 @@ methyLImp2(
   range = NULL,
   groups = NULL,
   skip_imputation_ids = NULL,
-  BPPARAM = NULL,
+  BPPARAM = BiocParallel::bpparam(),
   minibatch_frac = 1,
   minibatch_reps = 1,
   overwrite_res = TRUE
@@ -24,8 +24,8 @@ with named samples in rows and variables (probes) in named columns, or a
 SummarizedExperiment object, with an assay with variables in rows 
 and samples in columns, as standard.}
 
-\item{which_assay}{a character specifying which assay of the 
-SummarizedExperiment object to impute.}
+\item{which_assay}{a character specifying the name of assay of the 
+SummarizedExperiment object to impute. By default the first one will be imputed.}
 
 \item{type}{a type of data, 450K or EPIC. Type is used to split CpGs across 
 chromosomes. Match of CpGs to chromosomes is taken from ChAMPdata package. 
@@ -57,8 +57,10 @@ are considered.}
 \item{BPPARAM}{set of options for parallelization through BiocParallel package.
 For details we refer to their documentation. The one thing most users probably
 wish to customize is the number of cores. By default it is set to 
-\eqn{\#physical cores - 1}. If you wish to change is, supply
-\code{BBPARAM = SnowParam(workers = ncores)} with your desired \code{ncores}.}
+\eqn{\#cores - 2}. If you wish to change is, supply
+\code{BBPARAM = SnowParam(workers = ncores)} with your desired \code{ncores}.
+We also recommend setting \code{exportglobals = FALSE} since it can help reduce
+running time.}
 
 \item{minibatch_frac}{a number between 0 and 1, what fraction of samples 
 to use for mini-batch computation. Remember that if your data has several groups, 
@@ -74,7 +76,7 @@ a fraction of samples specified above (more times -> better performance but
 more runtime). The default is 1 (as a companion to default fraction of 100\%,
 i.e. no mini-batch).}
 
-\item{overwrite_res}{a boolean specifying whether to overwrite a first assays 
+\item{overwrite_res}{a boolean specifying whether to overwrite a \code{which_assay} 
 slot in an input SummarizedExperiment object or to add another slot with 
 imputed data. The default is \code{TRUE} to reduced the object size.}
 }

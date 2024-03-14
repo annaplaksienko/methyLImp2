@@ -81,8 +81,8 @@ split_by_chromosomes <- function(data,
 #' with named samples in rows and variables (probes) in named columns, or a 
 #' SummarizedExperiment object, with an assay with variables in rows 
 #' and samples in columns, as standard.
-#' @param which_assay a character specifying which assay of the 
-#' SummarizedExperiment object to impute.
+#' @param which_assay a character specifying the name of assay of the 
+#' SummarizedExperiment object to impute. By default the first one will be imputed.
 #' @param type a type of data, 450K or EPIC. Type is used to split CpGs across 
 #' chromosomes. Match of CpGs to chromosomes is taken from ChAMPdata package. 
 #' If you wish to provide your own match, specify "user" in 
@@ -108,8 +108,10 @@ split_by_chromosomes <- function(data,
 #' @param BPPARAM set of options for parallelization through BiocParallel package.
 #' For details we refer to their documentation. The one thing most users probably
 #' wish to customize is the number of cores. By default it is set to 
-#' \eqn{\#physical cores - 1}. If you wish to change is, supply
+#' \eqn{\#cores - 2}. If you wish to change is, supply
 #' \code{BBPARAM = SnowParam(workers = ncores)} with your desired \code{ncores}.
+#' We also recommend setting \code{exportglobals = FALSE} since it can help reduce
+#' running time.
 #' @param minibatch_frac a number between 0 and 1, what fraction of samples 
 #' to use for mini-batch computation. Remember that if your data has several groups, 
 #' mini-batch will be applied to each group separately but with the same fraction, 
@@ -122,7 +124,7 @@ split_by_chromosomes <- function(data,
 #' a fraction of samples specified above (more times -> better performance but 
 #' more runtime). The default is 1 (as a companion to default fraction of 100\%,
 #' i.e. no mini-batch).
-#' @param overwrite_res a boolean specifying whether to overwrite a first assays 
+#' @param overwrite_res a boolean specifying whether to overwrite a \code{which_assay} 
 #' slot in an input SummarizedExperiment object or to add another slot with 
 #' imputed data. The default is \code{TRUE} to reduced the object size.
 #'
@@ -149,7 +151,7 @@ methyLImp2 <- function(input, which_assay = NULL,
                       range = NULL,
                       groups = NULL,
                       skip_imputation_ids = NULL,
-                      BPPARAM = NULL,
+                      BPPARAM = BiocParallel::bpparam(),
                       minibatch_frac = 1, minibatch_reps = 1,
                       overwrite_res = TRUE) {
   
@@ -174,7 +176,7 @@ methyLImp2 <- function(input, which_assay = NULL,
             if (which_assay %in% assayNames(input)) {
                 data_full <- t(assay(input, which_assay))
             } else {
-                stop("Please provide correct which_assay name.")
+                stop("Please provide correct assay name.")
             }
         }
         flag <- "SE"
@@ -238,32 +240,25 @@ methyLImp2 <- function(input, which_assay = NULL,
         nchr <- length(data_chr)
         
         #run methyLImp in parallel for each chromosome
-        if (is.null(BPPARAM)) {
-            ncores <- min(nchr,
-                          detectCores(logical = FALSE) - 1)
-            #we set seed inside the parameters so that random sampling for mini-batch
-            #is reproducible
-            parallel_param <- SnowParam(workers = ncores, type = "SOCK",
-                                        tasks = nchr,
-                                        exportglobals = FALSE, 
-                                        exportvariables = FALSE,
-                                        RNGseed = 1994)
-        } else if (attr(class(BPPARAM), "package") == "BiocParallel") {
-            parallel_param <- BPPARAM
-            parallel_param$tasks <- nchr
-            parallel_param$exportglobals <- FALSE
-            parallel_param$exportvariables <- FALSE
-            parallel_param$RNGseed <- 1994
-        } else {
-            stop("Please provide correct BPPARAM argument.")
+        if (is.null(BPPARAM$RNGseed)) {
+            BPPARAM$RNGseed <- 1994
+        }
+        
+        if (BPPARAM$tasks != 0 & BPPARAM$tasks != nchr) {
+            BPPARAM$tasks <- nchr
+            warning("BPPARAM$tasks parameter must be equal to the number of chromosomes. Your input was overwritten.")
+        }
+        
+        if (BPPARAM$exportglobals) {
+            warning("BPPARAM$exportglobals = TRUE. Setting it to FALSE may reduce the running time.")
         }
 
-        bpstart(parallel_param)
+        bpstart(BPPARAM)
         res <- bplapply(data_chr, methyLImp2_internal, 
                          min, max, skip_imputation_ids,
                          minibatch_frac, minibatch_reps,
-                         BPPARAM = parallel_param)
-        bpstop(parallel_param)
+                         BPPARAM = BPPARAM)
+        bpstop(BPPARAM)
         
         names(res) <- names(data_chr)
         
@@ -297,10 +292,15 @@ methyLImp2 <- function(input, which_assay = NULL,
     
     if (flag == "SE") {
         if (overwrite_res) {
-            assays(input)[[1]] <- t(out_full)
+            if (is.null(which_assay)) {
+                assay(input) <- t(out_full)
+            } else {
+                assay(input, which_assay) <- t(out_full)
+            }    
             return(input)
         } else {
-            assay(input, "beta_imputed") <- t(out_full)
+            assay(input, paste(which_assay, "_imputed", sep = "_")) <- 
+                t(out_full)
             return(input)
         }
     } else {
