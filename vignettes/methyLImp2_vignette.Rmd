@@ -94,7 +94,8 @@ Here we opt to overwrite the existing assay of the SummarizedExperiment object w
 ```{r run methyLImp}
 time <- system.time(beta_SE_imputed <- methyLImp2(input = beta_SE, 
                                                type = "EPIC", 
-                                               BPPARAM = SnowParam(workers = 2),
+                                               BPPARAM = SnowParam(workers = 2,
+                                                                   exportglobals = FALSE),
                                                minibatch_frac = 0.5))
 print(paste0("Runtime was ", round(time[3], digits = 2), " seconds."))
 ```

@@ -1,6 +1,11 @@
 CHANGES IN VERSION 0.99.6 (Release date: 2024-03-14)
 ------------------------
 
+    o Fixing "exportglobals = FALSE" in the vignette.
+
+CHANGES IN VERSION 0.99.6 (Release date: 2024-03-14)
+------------------------
+
     o Fixing "BPPARAM" and "assay" usage.
 
 CHANGES IN VERSION 0.99.5 (Release date: 2024-03-05)
