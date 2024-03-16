@@ -1,9 +1,9 @@
-CHANGES IN VERSION 0.99.7 (Release date: 2024-03-16)
+CHANGES IN VERSION 0.99.8 (Release date: 2024-03-16)
 ------------------------
 
     o Fixing parallelization set-up.
     
-CHANGES IN VERSION 0.99.6 (Release date: 2024-03-14)
+CHANGES IN VERSION 0.99.7 (Release date: 2024-03-14)
 ------------------------
 
     o Fixing "exportglobals = FALSE" in the vignette.
