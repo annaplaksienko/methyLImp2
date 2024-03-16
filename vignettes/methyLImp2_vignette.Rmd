@@ -85,17 +85,16 @@ Now, let's run *methyLImp2*! You start by providing either a numeric data matrix
 
 * Specify the type of data as "user-provided". Type of data (450k or EPIC) is used to split CpGs across chromosomes. Match of CpGs to chromosomes is taken from ChAMPdata package (there, in turn, it is from Illumina website). Therefore, if you wish to provide your own match, specify "user" in the type argument and provide a data frame with in the annotation argument; 
 
-* Choose the number of cores. *methyLImp2* first splits the data by chromosomes and then does imputation in parallel. By default the number of cores will be either one less than total number of your physical cores or the number of chromosomes, if that number is smaller. Here we use 2 since an example dataset has only two chromosomes is small but we encourage you to increase this number; 
+* Set up mini-batch computation. If your dataset is quite big sample-wise, you can opt to use only a fraction of samples for the imputation to decrease the running time, say 10, 20, 50% (depending on the original number of samples). Subsample will be chosen randomly for each calculation. The bigger the subsample - the better is the performance, hence by default it is 1. An option to improve the performance but still keep the running time low is to repeat computation for a (randomly chosen) fraction of samples several times, maybe 2, 3, 5. In the manuscript we explore how these two tuning parameters influence the running time and the performance.
 
-* Set up mini-batch computation. If your dataset is quite big sample-wise, you can opt to use only a fraction of samples for the imputation to decrease the running time, say 10, 20, 50% (depending on the original number of samples). Subsample will be chosen randomly for each calculation. The bigger the subsample - the better is the performance, hence by default it is 1. An option to improve the performance but still keep the running time low is to repeat computation for a (randomly chosen) fraction of samples several times, maybe 2, 3, 5. In the paper we explore how these two tuning parameters influence the running time and the performance.
+* Choose the number of cores/workers. *methyLImp2* first splits the data by chromosomes and then does imputation for each subset in parallel. The default of the `BiocParallel` package is two less than total number of your cores. You can change it to your chosen N by setting `BPPARAM = SnowParam(workers = N)`. Since here we have only two chromosomes, *methyLImp2* will give a warning that it overwrote default settings. Note that we also encourage you to set `exportglobals = FALSE` since it allows to slightly speed up the computation; 
 
-Here we opt to overwrite the existing assay of the SummarizedExperiment object with the imputed one to save memory. However, you can set `r overwrite_res = FALSE` and then another slot will be added.
+* Choose not to overwrite your data with the imputed one. Here we opt to use the default setting and overwrite the existing assay of the SummarizedExperiment object to save memory. However, you can set `overwrite_res = FALSE` and then another slot will be added.
 
 ```{r run methyLImp}
 time <- system.time(beta_SE_imputed <- methyLImp2(input = beta_SE, 
                                                type = "EPIC", 
-                                               BPPARAM = SnowParam(workers = 2,
-                                                                   exportglobals = FALSE),
+                                               BPPARAM = SnowParam(exportglobals = FALSE),
                                                minibatch_frac = 0.5))
 print(paste0("Runtime was ", round(time[3], digits = 2), " seconds."))
 ```

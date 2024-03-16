@@ -90,18 +90,18 @@ split_by_chromosomes <- function(data,
 #' @param annotation a data frame, user provided match between CpG sites and 
 #' chromosomes. Must contain two columns: cpg and chr. Choose "user" in the 
 #' previous argument to be able to provide user annotation.
-#' @param range a vector of two numbers, \eqn{min} and \eqn{max}, 
-#' specifying the range of values in the data. 
-#' Since we assume the beta-value representation of the methylation data, 
-#' the default range is \eqn{[0, 1]}. 
-#' However, if a user wishes to apply the method to the other kind of data, 
-#' they can change the range in this argument.
 #' @param groups a vector of the same length as the number of samples that 
 #' identifies what groups does each sample correspond, e.g. \code{c(1, 1, 2, 3)}
 #' or \code{c("group1", "group1", "group2", "group3")}. Unique elements of the 
 #' vector will be identified as groups and data will be split accordingly. 
 #' Imputation will be done for each group separately consecutively. 
 #' The default is NULL, so all samples are considered as one group. 
+#' @param range a vector of two numbers, \eqn{min} and \eqn{max}, 
+#' specifying the range of values in the data. 
+#' Since we assume the beta-value representation of the methylation data, 
+#' the default range is \eqn{[0, 1]}. 
+#' However, if a user wishes to apply the method to the other kind of data, 
+#' they can change the range in this argument.
 #' @param skip_imputation_ids a numeric vector of ids of the columns with NAs  
 #' for which \emph{not} to perform the imputation. If \code{NULL}, all columns 
 #' are considered.
@@ -110,6 +110,8 @@ split_by_chromosomes <- function(data,
 #' wish to customize is the number of cores. By default it is set to 
 #' \eqn{\#cores - 2}. If you wish to change is, supply
 #' \code{BBPARAM = SnowParam(workers = ncores)} with your desired \code{ncores}.
+#' If the default or user-specified number of workers is higher than number of 
+#' chromosomes, it will be overwritten.
 #' We also recommend setting \code{exportglobals = FALSE} since it can help reduce
 #' running time.
 #' @param minibatch_frac a number between 0 and 1, what fraction of samples 
@@ -148,8 +150,8 @@ split_by_chromosomes <- function(data,
 methyLImp2 <- function(input, which_assay = NULL,
                       type = c("450K", "EPIC", "user"),
                       annotation = NULL,
-                      range = NULL,
                       groups = NULL,
+                      range = NULL,
                       skip_imputation_ids = NULL,
                       BPPARAM = BiocParallel::bpparam(),
                       minibatch_frac = 1, minibatch_reps = 1,
@@ -214,6 +216,32 @@ methyLImp2 <- function(input, which_assay = NULL,
         }
     }
     
+    #check the parallelization set-up
+    {
+        #split the data by chromosomes to see the nchr
+        data_chr_full <- split_by_chromosomes(data = data_full, type = type,
+                                              annotation = annotation)
+        nchr <- length(data_chr_full)
+        
+        if (BPPARAM$tasks != 0 & BPPARAM$tasks != nchr) {
+            BPPARAM$tasks <- nchr
+            warning("BPPARAM$tasks parameter must be equal to the number of chromosomes. Your input was overwritten.")
+        }
+        
+        if (nchr < BPPARAM$workers) {
+            BPPARAM$workers <- nchr
+            warning("Number of chromosomes is less than specified BPPARAM$workers. Your input was overwritten since more cores than number of chromosomes is not necessary.")
+        }
+        
+        if (is.null(BPPARAM$RNGseed)) {
+            BPPARAM$RNGseed <- 1994
+        }
+        
+        if (BPPARAM$exportglobals) {
+            warning("BPPARAM$exportglobals = TRUE. Setting it to FALSE may reduce the running time.")
+        }
+    }
+    
     #check groups
     if (is.null(groups)) {
         groups <- rep(1, dim(data_full)[1])
@@ -232,27 +260,15 @@ methyLImp2 <- function(input, which_assay = NULL,
     
     for (i in seq_len(ngroups)) {
         curr_group <- unique_groups[i]
-        data <- data_full[groups == curr_group, ]
+        data_group <- data_full[groups == curr_group, ]
         
-        #split the data by chromosomes
-        data_chr <- split_by_chromosomes(data = data, type = type,
-                                         annotation = annotation)
-        nchr <- length(data_chr)
+        data_chr <- vector(mode = "list", length = nchr)
+        names(data_chr) <- names(data_chr_full)
+        for (j in seq_len(nchr)) {
+            data_chr[[j]] <- data_chr_full[[j]][groups == curr_group, ]
+        }
         
         #run methyLImp in parallel for each chromosome
-        if (is.null(BPPARAM$RNGseed)) {
-            BPPARAM$RNGseed <- 1994
-        }
-        
-        if (BPPARAM$tasks != 0 & BPPARAM$tasks != nchr) {
-            BPPARAM$tasks <- nchr
-            warning("BPPARAM$tasks parameter must be equal to the number of chromosomes. Your input was overwritten.")
-        }
-        
-        if (BPPARAM$exportglobals) {
-            warning("BPPARAM$exportglobals = TRUE. Setting it to FALSE may reduce the running time.")
-        }
-
         bpstart(BPPARAM)
         res <- bplapply(data_chr, methyLImp2_internal, 
                          min, max, skip_imputation_ids,
@@ -275,12 +291,12 @@ methyLImp2 <- function(input, which_assay = NULL,
         }
         
         #replace NAs with imputed values
-        out <- data
+        out <- data_group
         for (c in seq_len(nchr)) {
             if (names(res)[c] %in% problem_chr) next
             imputed <- res[[c]]
-            rows_id <- rownames(data) %in% rownames(imputed)
-            cols_id <- colnames(data) %in% colnames(imputed)
+            rows_id <- rownames(data_group) %in% rownames(imputed)
+            cols_id <- colnames(data_group) %in% colnames(imputed)
             out[rows_id, cols_id] <- imputed
         }
         

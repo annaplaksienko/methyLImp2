@@ -9,8 +9,8 @@ methyLImp2(
   which_assay = NULL,
   type = c("450K", "EPIC", "user"),
   annotation = NULL,
-  range = NULL,
   groups = NULL,
+  range = NULL,
   skip_imputation_ids = NULL,
   BPPARAM = BiocParallel::bpparam(),
   minibatch_frac = 1,
@@ -36,19 +36,19 @@ this argument and provide a data frame in the next argument.}
 chromosomes. Must contain two columns: cpg and chr. Choose "user" in the 
 previous argument to be able to provide user annotation.}
 
-\item{range}{a vector of two numbers, \eqn{min} and \eqn{max}, 
-specifying the range of values in the data. 
-Since we assume the beta-value representation of the methylation data, 
-the default range is \eqn{[0, 1]}. 
-However, if a user wishes to apply the method to the other kind of data, 
-they can change the range in this argument.}
-
 \item{groups}{a vector of the same length as the number of samples that 
 identifies what groups does each sample correspond, e.g. \code{c(1, 1, 2, 3)}
 or \code{c("group1", "group1", "group2", "group3")}. Unique elements of the 
 vector will be identified as groups and data will be split accordingly. 
 Imputation will be done for each group separately consecutively. 
 The default is NULL, so all samples are considered as one group.}
+
+\item{range}{a vector of two numbers, \eqn{min} and \eqn{max}, 
+specifying the range of values in the data. 
+Since we assume the beta-value representation of the methylation data, 
+the default range is \eqn{[0, 1]}. 
+However, if a user wishes to apply the method to the other kind of data, 
+they can change the range in this argument.}
 
 \item{skip_imputation_ids}{a numeric vector of ids of the columns with NAs
 for which \emph{not} to perform the imputation. If \code{NULL}, all columns 
@@ -59,6 +59,8 @@ For details we refer to their documentation. The one thing most users probably
 wish to customize is the number of cores. By default it is set to 
 \eqn{\#cores - 2}. If you wish to change is, supply
 \code{BBPARAM = SnowParam(workers = ncores)} with your desired \code{ncores}.
+If the default or user-specified number of workers is higher than number of 
+chromosomes, it will be overwritten.
 We also recommend setting \code{exportglobals = FALSE} since it can help reduce
 running time.}
 
