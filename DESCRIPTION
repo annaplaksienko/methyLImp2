@@ -1,6 +1,6 @@
 Package: methyLImp2
 Title: Missing value estimation of DNA methylation data
-Version: 0.99.8
+Version: 1.0.0
 Authors@R: c(
     person("Pietro", "Di Lena", 
     role = c("aut"),
