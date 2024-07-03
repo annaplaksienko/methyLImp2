@@ -284,8 +284,8 @@ methyLImp2 <- function(input, which_assay = NULL,
         if (sum(vapply(res, function(x) is.character(x), logical(1))) > 0) {
             problem_chr <- names(data_chr)[vapply(res, function(x) is.character(x), 
                                                   logical(1))]
-            for (i in length(problem_chr)) {
-                message("For group " , curr_group, "and chromosome ", 
+            for (i in 1:length(problem_chr)) {
+                message("Sample group " , curr_group, ", ", 
                         problem_chr[i], ": ", res[problem_chr[i]])
             }
         }
@@ -372,15 +372,11 @@ methyLImp2_internal <- function(dat,
         
         #If all the columns have missing values we cannot do anything
         if (dim(dat_na)[2] == dim(dat)[2]) {
-            return("Not enough data without missing values to conduct imputation.")
+            return("No CpGs without any missing values, not possible to conduct imputation.")
         } 
-        #else {
-        #  message("#columns with #NAs < (#samples - 1): ", dim(dat_na)[2])
-        #}
         
         unique_patterns <- unique(t(dat_na))
         npatterns <- dim(unique_patterns)[1]
-        #message("#regression groups: ", npatterns)
         
         ids <- vector(mode = "list", length = npatterns)
         
