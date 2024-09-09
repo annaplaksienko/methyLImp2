@@ -38,3 +38,19 @@
 #'
 #' @source https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi
 "beta_meta"
+
+#' An example of how custom (user provided) annotation data frame should look like
+#'
+#' A snippet from an annotation for 450K methylation dataset from ChAMPdata package. Only 5 CpGs are chosen simply to provide an example of the data frame organization.
+#'
+#' @docType data
+#'
+#' @usage data(custom_anno_example)
+#'
+#' @format A data.frame
+#' @return A data.frame.
+#'
+#' @keywords datasets
+"custom_anno_example"
+
+
