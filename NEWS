@@ -1,3 +1,9 @@
+CHANGES IN VERSION 1.1.1 (Release date: 2024-09-10)
+------------------------
+
+    o Fixing wrong error/warning messages;
+    o Adding example of user-provided annotation.
+
 CHANGES IN VERSION 1.0.1 (Release date: 2024-07-03)
 ------------------------
 
